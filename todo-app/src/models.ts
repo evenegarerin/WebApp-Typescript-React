@@ -1,4 +1,6 @@
 export type TodoStatus = "open" | "in-progress" | "done";
+export const todoStatuses = ["open", "in-progress", "done"] as const
+
 export type TodoPriority = "low" | "medium" | "high";
 
 export interface Todo {

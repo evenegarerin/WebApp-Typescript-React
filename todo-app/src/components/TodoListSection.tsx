@@ -8,12 +8,12 @@ import { useState } from "react";
 interface TodoListSectionProps {
     list: TodoList,
     todos: Array<Todo>
-    addTodo: (todo: Todo) => void
-    updateTodo: (todo: Todo) => void
-    dropTodo: (todo: Todo) => void
+    addTodo: (Todo: Todo) => void
+    toggleTodo: (id: number) => void
+    dropTodo: (id: number) => void
 }
 
-const TodoListSection = ({ list, todos, addTodo, updateTodo, dropTodo }: TodoListSectionProps) => {
+const TodoListSection = ({ list, todos, addTodo, toggleTodo, dropTodo }: TodoListSectionProps) => {
     const [title, setTitle] = useState("")
 
     const filterOptions = ["all", ...todoStatuses] as const
@@ -63,7 +63,7 @@ const TodoListSection = ({ list, todos, addTodo, updateTodo, dropTodo }: TodoLis
 
             <CardContent>
                 {filterTodos(todos, filter).map(todo => (
-                    <TodoCard key={todo.id} todo={todo} updateTodo={updateTodo} dropTodo={dropTodo} />
+                    <TodoCard key={todo.id} todo={todo} toggleTodo={toggleTodo} dropTodo={dropTodo} />
                 ))}
             </CardContent>
         </Card>

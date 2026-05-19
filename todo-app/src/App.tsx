@@ -1,59 +1,75 @@
-import { useState } from "react"
-import Footer from "./components/Footer"
+"use client"
+
+import { useState, useTransition } from "react"
+import { Box, Grid } from "@mui/material"
 import Header from "./components/Header"
+import Footer from "./components/Footer"
 import TodoListSection from "./components/TodoListSection"
-import { ExampleTodoLists, ExampleTodos } from "./data"
-import type { Todo, TodoList } from "./models"
-import { Box, Container, Grid, Grow } from "@mui/material"
 import Statistics from "./components/Statistics"
+import { ExampleTodoLists } from "../src/data"
+import type { Todo } from "../src/models"
+import { getTodos, addTodo, deleteTodo, toggleTodo } from "../src/actions"
+import AppLayout from "./components/AppLayout"
+
+type Props = {
+    initialTodos: Todo[]
+}
 
 const getTodosByList = (todos: Todo[], listId: number): Todo[] => {
-  return todos.filter(
-    todo => todo.listId === listId
-  )
+    return todos.filter(todo => todo.listId === listId)
 }
 
-const App = () => {
-  const [todos, setTodos] = useState(ExampleTodos)
-  const [lists, setLists] = useState(ExampleTodoLists)
+export default function TodoApp({ initialTodos }: Props) {
+    const [todos, setTodos] = useState(initialTodos)
+    const [lists] = useState(ExampleTodoLists)
+    const [isPending, startTransition] = useTransition()
 
-  const addTodo = (todo: Todo) => {
-    setTodos([...todos, todo])
-  }
+    const refreshTodos = async () => {
+        const updated = await getTodos()
+        setTodos(updated)
+    }
 
-  const updateTodo = (todo: Todo) => {
-    setTodos(todos.map(t =>
-      t.id === todo.id ? { ...todo } : t
-    ))
-  }
+    const handleAddTodo = (newTodo: Todo) => {
+        startTransition(async () => {
+            await addTodo(newTodo)
+            await refreshTodos()
+        })
+    }
 
-  const dropTodo = (todo: Todo) => {
-    setTodos(todos.filter(t => t !== todo))
-  }
+    const handleDeleteTodo = (id: number) => {
+        startTransition(async () => {
+            await deleteTodo(id)
+            await refreshTodos()
+        })
+    }
 
-  return (
-    <Box display='flex' flexDirection="column" width='100vw' height='100vh'>
-      <Header title={"your cool todo list"} todoCount={todos.length} />
+    const handleToggleTodo = (id: number) => {
+        startTransition(async () => {
+            await toggleTodo(id)
+            await refreshTodos()
+        })
+    }
 
-      <Box display='flex' flexDirection="column" justifyContent='center' width='100%' flex='1'>
-        <Grid container spacing={2} sx={{ maxWidth: 1100 }} alignSelf="center">
-          {lists.map(todoList => (
-            <Grid key={todoList.id} size={{ xs: 12, sm: 6, md: 4 }}>
-              <TodoListSection list={todoList} todos={getTodosByList(todos, todoList.id)} addTodo={addTodo} updateTodo={updateTodo} dropTodo={dropTodo} />
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+    return (
+        <AppLayout>
+            <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', width: '100%', flex: '1' }}>
 
-      <Statistics todos={todos}>
+                <Grid container spacing={2} sx={{ maxWidth: 1100, alignSelf: "center" }}>
+                    {lists.map(todoList => (
+                        <Grid key={todoList.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                            <TodoListSection
+                                list={todoList}
+                                todos={getTodosByList(todos, todoList.id)}
+                                addTodo={handleAddTodo}
+                                toggleTodo={handleToggleTodo}
+                                dropTodo={handleDeleteTodo}
+                            />
+                        </Grid>
+                    ))}
+                </Grid>
+            </Box>
 
-      </Statistics>
-
-      <Footer author={"me"} />
-    </Box >
-  )
+            <Statistics todos={todos} />
+        </AppLayout>
+    )
 }
-
-
-
-export default App

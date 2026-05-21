@@ -6,208 +6,277 @@ import { TodoList } from "@/types/TodoList";
 import { todoPriorities, TodoPriority } from "@/types/TodoPriority";
 import { TodoStatus, todoStatuses } from "@/types/TodoStatus";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, TextField, MenuItem, Box, Chip, } from "@mui/material";
+import { ActionResult } from "next/dist/shared/lib/app-router-types";
 import { useEffect, useState } from "react";
+
+import { useForm } from "@tanstack/react-form"
+import { todoInputSchema, type TodoInput } from "@/schemas";
+import { useRouter } from "next/navigation";
 
 type ConfirmDialogProps = {
     open: boolean;
     close: () => void;
-    addTodo: (Todo: Todo) => void;
-    listId: number | null;
+    defaultValues?: Partial<Todo>;
+    onSubmit: (value: TodoInput) => void;
+    submitLabel?: string;
+    redirectTo?: string;
 };
 
-export default function CreateTodoDialog({ open, close, addTodo, listId }: ConfirmDialogProps) {
-    const [name, setName] = useState("");
-    const [description, setDescription] = useState("");
-    const [todoList, setTodoList] = useState("");
-    const [status, setStatus] = useState<TodoStatus>("open");
-    const [priority, setPriority] = useState<TodoPriority>("medium");
-    const [dueDate, setDueDate] = useState("");
+export default function CreateTodoDialog({ open, close, defaultValues, onSubmit, submitLabel, redirectTo }: ConfirmDialogProps) {
+    const router = useRouter();
+
+    const [lists, setLists] = useState<TodoList[]>([]);
     const [tagInput, setTagInput] = useState("");
-    const [tags, setTags] = useState<string[]>([]);
-
-    const addTag = () => {
-        const trimmed = tagInput.trim();
-        if (!trimmed) return;
-        if (!tags.includes(trimmed)) {
-            setTags([...tags, trimmed]);
-        }
-        setTagInput("");
-    };
-
-    const removeTag = (tag: string) => {
-        setTags(tags.filter(t => t !== tag));
-    };
-
-    const reset = () => {
-        setName("");
-        setDescription("");
-        setTodoList(defaultTodoList)
-        setStatus("open");
-        setPriority("medium");
-        setDueDate("");
-        setTags([]);
-        setTagInput("");
-    };
-
-    const handleClose = () => {
-        reset();
-        close();
-    };
-
-    const [defaultTodoList, setDefaultTodoList] = useState("")
-
-    const [todoLists, setTodoLists] = useState<TodoList[]>([]);
 
     useEffect(() => {
-        const load = async () => {
-            const lists = await getTodoLists()
-
-            setTodoLists(lists)
-
-            const match = lists.find(list => list.id === listId);
-
-            if (match) {
-                setTodoList(match.name);
-                setDefaultTodoList(match.name)
-            }
+        const loadLists = async () => {
+            const lists = await getTodoLists();
+            setLists(lists);
         };
 
-        load();
-    }, [listId]);
+        loadLists();
+    }, []);
 
-    const handleConfirm = async () => {
-        const list: TodoList | undefined = todoLists.find(
-            (list) => list.name === todoList
-        );
+    const form = useForm({
+        defaultValues: {
+            name: defaultValues?.name ?? "",
+            listId: defaultValues?.listId ?? 0,
+            description: defaultValues?.description ?? "",
+            priority: defaultValues?.priority ?? "low",
+            dueDate: defaultValues?.dueDate ?? null,
+            tags: defaultValues?.tags ?? [],
+            status: defaultValues?.status ?? "open",
+        },
 
-        if (!list) return;
+        validators: {
+            onChange: todoInputSchema
+        },
 
-        const newTodo: Todo = {
-            id: Date.now(),
-            name,
-            description: description || undefined,
-            status,
-            priority,
-            dueDate: dueDate || undefined,
-            tags,
-            listId: list.id,
-        };
+        onSubmit: async ({ value }) => {
+            const result = await onSubmit(value)
 
-        addTodo(newTodo);
-
-        reset();
-        close();
-    };
+            if (redirectTo) router.push(redirectTo)
+        },
+    })
 
     return (
-        <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
+        <Dialog open={open} onClose={close} fullWidth maxWidth="sm">
             <DialogTitle>Create Todo</DialogTitle>
 
             <DialogContent>
-                <Stack spacing={2} mt={1}>
-                    <TextField
-                        label="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        fullWidth
-                    />
+                <Box component="form" onSubmit={e => {
+                    e.preventDefault()
+                    form.handleSubmit()
+                }}>
+                    <Stack spacing={2} mt={1}>
 
-                    <TextField
-                        label="Description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        fullWidth
-                        multiline
-                        minRows={2}
-                    />
-
-                    <TextField
-                        select
-                        label="TodoList"
-                        value={todoList}
-                        onChange={(e) => setTodoList(e.target.value)}
-                        fullWidth
-                    >
-                        {todoLists.map((list) => (
-                            <MenuItem key={list.id} value={list.name}>
-                                {list.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-
-                    <TextField
-                        select
-                        label="Status"
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value as TodoStatus)}
-                    >
-                        {todoStatuses.map((s) => (
-                            <MenuItem key={s} value={s}>
-                                {s}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-
-                    <TextField
-                        select
-                        label="Priority"
-                        value={priority}
-                        onChange={(e) =>
-                            setPriority(e.target.value as TodoPriority)
-                        }
-                    >
-                        {todoPriorities.map((p) => (
-                            <MenuItem key={p} value={p}>
-                                {p}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-
-                    <TextField
-                        label="Due Date"
-                        type="date"
-                        value={dueDate}
-                        onChange={(e) => setDueDate(e.target.value)}
-                        InputLabelProps={{ shrink: true }}
-                    />
-
-                    <Box>
-                        <Stack direction="row" spacing={1}>
-                            <TextField
-                                label="Add tag"
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === "Enter") addTag();
-                                }}
-                            />
-                            <Button onClick={addTag} variant="outlined">
-                                Add
-                            </Button>
-                        </Stack>
-
-                        <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-                            {tags.map((tag) => (
-                                <Chip
-                                    key={tag}
-                                    label={tag}
-                                    onDelete={() => removeTag(tag)}
+                        <form.Field
+                            name="name"
+                            children={(field) => (
+                                <TextField
+                                    label="Name"
+                                    value={field.state.value}
+                                    onChange={(e) => field.handleChange(e.target.value)}
+                                    onBlur={field.handleBlur}
+                                    error={field.state.meta.errors.length > 0}
+                                    helperText={field.state.meta.errors[0]?.message}
+                                    fullWidth
                                 />
-                            ))}
-                        </Stack>
-                    </Box>
-                </Stack>
-            </DialogContent>
+                            )}
+                        />
 
-            <DialogActions>
-                <Button onClick={handleClose}>Cancel</Button>
-                <Button
-                    onClick={handleConfirm}
-                    variant="contained"
-                >
-                    Confirm
-                </Button>
-            </DialogActions>
+                        <form.Field
+                            name="description"
+                            children={(field) => (
+                                <TextField
+                                    label="Description"
+                                    value={field.state.value}
+                                    onChange={(e) => field.handleChange(e.target.value)}
+                                    onBlur={field.handleBlur}
+                                    error={field.state.meta.errors.length > 0}
+                                    helperText={field.state.meta.errors[0]?.message}
+                                    fullWidth
+                                    multiline
+                                    minRows={2}
+                                />
+                            )}
+                        />
+
+                        <form.Field
+                            name="listId"
+                            children={(field) => (
+                                <TextField
+                                    select
+                                    label="Todo List"
+                                    value={field.state.value}
+                                    onChange={(e) =>
+                                        field.handleChange(Number(e.target.value))
+                                    }
+                                    fullWidth
+                                >
+                                    {lists.map((list) => (
+                                        <MenuItem key={list.id} value={list.id}>
+                                            {list.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            )}
+                        />
+
+                        <form.Field
+                            name="status"
+                            children={(field) => (
+                                <TextField
+                                    select
+                                    label="Status"
+                                    value={field.state.value}
+                                    onChange={(e) =>
+                                        field.handleChange(e.target.value as TodoStatus)
+                                    }
+                                    fullWidth
+                                >
+                                    {todoStatuses.map((s) => (
+                                        <MenuItem key={s} value={s}>
+                                            {s}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            )}
+                        />
+
+                        <form.Field
+                            name="priority"
+                            children={(field) => (
+                                <TextField
+                                    select
+                                    label="Priority"
+                                    value={field.state.value}
+                                    onChange={(e) =>
+                                        field.handleChange(e.target.value as TodoPriority)
+                                    }
+                                    fullWidth
+                                >
+                                    {todoPriorities.map((p) => (
+                                        <MenuItem key={p} value={p}>
+                                            {p}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            )}
+                        />
+
+                        <form.Field
+                            name="dueDate"
+                            children={(field) => (
+                                <TextField
+                                    label="Due Date"
+                                    type="date"
+                                    value={field.state.value ?? ""}
+                                    onChange={(e) =>
+                                        field.handleChange(
+                                            e.target.value === "" ? null : e.target.value
+                                        )
+                                    }
+                                    InputLabelProps={{ shrink: true }}
+                                    fullWidth
+                                />
+                            )}
+                        />
+
+                        <form.Field
+                            name="tags"
+                            children={(field) => {
+                                const addTag = () => {
+                                    const trimmed = tagInput.trim()
+
+                                    if (!trimmed) return
+
+                                    if (!field.state.value.includes(trimmed)) {
+                                        field.handleChange([
+                                            ...field.state.value,
+                                            trimmed,
+                                        ])
+                                    }
+
+                                    setTagInput("")
+                                }
+
+                                const removeTag = (tag: string) => {
+                                    field.handleChange(
+                                        field.state.value.filter((t) => t !== tag)
+                                    )
+                                }
+
+                                return (
+                                    <Box>
+                                        <Stack direction="row" spacing={1}>
+                                            <TextField
+                                                label="Add tag"
+                                                value={tagInput}
+                                                onChange={(e) =>
+                                                    setTagInput(e.target.value)
+                                                }
+                                                onKeyDown={(e) => {
+                                                    if (e.key === "Enter") {
+                                                        e.preventDefault()
+                                                        addTag()
+                                                    }
+                                                }}
+                                                fullWidth
+                                            />
+
+                                            <Button
+                                                onClick={addTag}
+                                                variant="outlined"
+                                            >
+                                                Add
+                                            </Button>
+                                        </Stack>
+
+                                        <Stack
+                                            direction="row"
+                                            spacing={1}
+                                            mt={1}
+                                            flexWrap="wrap"
+                                        >
+                                            {field.state.value.map((tag) => (
+                                                <Chip
+                                                    key={tag}
+                                                    label={tag}
+                                                    onDelete={() => removeTag(tag)}
+                                                />
+                                            ))}
+                                        </Stack>
+                                    </Box>
+                                )
+                            }}
+                        />
+
+                        <DialogActions>
+                            <Button onClick={close}>
+                                Cancel
+                            </Button>
+
+                            <form.Subscribe
+                                selector={(state) => [
+                                    state.canSubmit,
+                                    state.isSubmitting,
+                                ]}
+                                children={([canSubmit, isSubmitting]) => (
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        disabled={!canSubmit || isSubmitting}
+                                    >
+                                        {submitLabel ?? "Save"}
+                                    </Button>
+                                )}
+                            />
+                        </DialogActions>
+
+                    </Stack>
+                </Box>
+            </DialogContent>
         </Dialog>
-    );
+    )
 }

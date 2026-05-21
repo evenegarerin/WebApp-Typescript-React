@@ -8,6 +8,7 @@ import type { Todo } from "@/types/Todo"
 import { getTodos, addTodo, deleteTodo, toggleTodo, getTodoLists, deleteTodoList, addTodoList } from "@/actions"
 import { TodoList } from "@/types/TodoList";
 import CreateTodoListDialog from "./CreateTodoListDialog";
+import { TodoInput } from "@/schemas";
 
 const getTodosByList = (todos: Todo[], listId: number): Todo[] => {
     return todos.filter(todo => todo.listId === listId)
@@ -35,7 +36,7 @@ export default function Overview() {
         loadLists();
     }, []);
 
-    const handleAddTodo = async (newTodo: Todo) => {
+    const handleAddTodo = async (newTodo: TodoInput) => {
         const updated = await addTodo(newTodo);
         setTodos(updated);
     };

@@ -12,6 +12,7 @@ const todo1: Todo = {
     name: "Präsentation vorbereiten",
     description: "Slides für Meeting erstellen",
     listId: 0,
+    dueDate: null
 };
 
 const todo2: Todo = {
@@ -22,6 +23,8 @@ const todo2: Todo = {
     priority: "high",
     tags: ["Arbeit"],
     listId: 0,
+    description: "",
+    dueDate: null
 };
 
 const todo3: Todo = {
@@ -32,6 +35,7 @@ const todo3: Todo = {
     tags: ["Gesundheit"],
     dueDate: "2026-04-02",
     listId: 2,
+    description: ""
 };
 
 const todo4: Todo = {
@@ -43,6 +47,7 @@ const todo4: Todo = {
     dueDate: "2026-04-30",
     tags: ["Finanzen"],
     listId: 1,
+    description: ""
 };
 
 const todo5: Todo = {
@@ -53,6 +58,8 @@ const todo5: Todo = {
     priority: "low",
     tags: ["Freizeit"],
     listId: 2,
+    description: "",
+    dueDate: null
 };
 
 const todo6: Todo = {
@@ -63,6 +70,8 @@ const todo6: Todo = {
     status: "in-progress",
     tags: ["Arbeit, Private, Tags"],
     listId: 0,
+    description: "",
+    dueDate: null
 };
 
 const todo7: Todo = {

@@ -10,13 +10,14 @@ import ConfirmDialog from "./ConfirmDialog";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import AddIcon from '@mui/icons-material/Add';
 import CreateTodoDialog from "@/components/CreateTodoDialog";
+import { TodoInput } from "@/schemas";
 
 interface TodoListSectionProps {
     list: TodoList;
     todos: Array<Todo>;
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
-    addTodo: (Todo: Todo) => void;
+    addTodo: (value: TodoInput) => void;
     toggleTodo: (id: number) => void;
     dropTodo: (id: number) => void;
     dropTodoList: (id: number) => void;
@@ -163,8 +164,15 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                 close={(): void => {
                     setOpenCreateTodoDialog(false)
                 }}
-                addTodo={addTodo}
-                listId={list.id} />
+                defaultValues={
+                    { listId: list.id }
+                }
+                onSubmit={
+                    addTodo
+                }
+                submitLabel="Add"
+                redirectTo="/"
+            />
         </>
     )
 }

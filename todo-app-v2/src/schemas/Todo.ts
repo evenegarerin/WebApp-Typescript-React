@@ -26,15 +26,3 @@ export const todoInputSchema = z.object({
 })
 
 export type TodoInput = z.infer<typeof todoInputSchema>
-
-
-// export interface Todo {
-//     id: number
-//     listId: number
-//     name: string
-//     description: string
-//     priority: TodoPriority
-//     dueDate: string | null // ISO-Datum (YYYY-MM-DD) oder null
-//     tags: string[]
-//     status: TodoStatus
-// }

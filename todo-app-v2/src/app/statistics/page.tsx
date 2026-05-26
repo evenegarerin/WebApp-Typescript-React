@@ -10,7 +10,6 @@ export default async function Home() {
     const done = todos.filter(t => t.status === "done").length
 
     return (
-
         <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', alignItems: 'center', width: '100%', flex: '1' }}>
             <Typography>
                 <span>total: {total} - </span>

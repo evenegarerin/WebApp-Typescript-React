@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Grid, IconButton, TextField } from "@mui/material"
+import { Box, Button, IconButton, TextField, Typography } from "@mui/material"
 import AddIcon from '@mui/icons-material/Add';
 import TodoListSection from "@/components/TodoListSection"
 import type { Todo } from "@/types/Todo"
 import { getTodos, addTodo, deleteTodo, toggleTodo, getTodoLists, deleteTodoList, addTodoList } from "@/actions"
 import { TodoList } from "@/types/TodoList";
 import CreateTodoListDialog from "./CreateTodoListDialog";
-import { TodoInput } from "@/schemas";
+import { TodoInput } from "@/schemas/Todo";
+import { TodoListInput } from "@/schemas/TodoList";
 
 const getTodosByList = (todos: Todo[], listId: number): Todo[] => {
     return todos.filter(todo => todo.listId === listId)
@@ -37,51 +38,89 @@ export default function Overview() {
     }, []);
 
     const handleAddTodo = async (newTodo: TodoInput) => {
-        const updated = await addTodo(newTodo);
-        setTodos(updated);
+        const result = await addTodo(newTodo);
+
+        if (!result.success) {
+            console.error(result.message);
+            return;
+        }
+
+        const updatedTodos = await getTodos();
+        setTodos(updatedTodos);
     };
 
-    const handleAddTodoList = async (newTodoList: TodoList) => {
-        const updated = await addTodoList(newTodoList);
-        setLists(updated);
+    const handleAddTodoList = async (newTodoList: TodoListInput) => {
+        const result = await addTodoList(newTodoList);
+
+        if (!result.success) {
+            console.error(result.message);
+            return;
+        }
+
+        const updatedLists = await getTodoLists();
+        setLists(updatedLists);
     }
 
     const handleDeleteTodo = async (id: number) => {
-        const updated = await deleteTodo(id);
-        setTodos(updated);
+        const result = await deleteTodo(id);
+
+        if (!result.success) {
+            console.error(result.message);
+            return;
+        }
+
+        const updatedTodos = await getTodos();
+        setTodos(updatedTodos);
     };
 
     const handleToggleTodo = async (id: number) => {
-        const updated = await toggleTodo(id);
-        setTodos(updated);
+        const result = await toggleTodo(id);
+
+        if (!result.success) {
+            console.error(result.message);
+            return;
+        }
+
+        const updatedTodos = await getTodos();
+        setTodos(updatedTodos);
     };
 
     const handleDeleteTodoList = async (id: number) => {
-        const updated = await deleteTodoList(id);
-        setLists(updated)
+        const result = await deleteTodoList(id);
+
+        if (!result.success) {
+            console.error(result.message);
+            return;
+        }
+
+        const updatedLists = await getTodoLists();
+        const updatedTodos = await getTodos();
+
+        setLists(updatedLists);
+        setTodos(updatedTodos);
     }
 
     const [openListId, setOpenListId] = useState<number | null>(null);
 
-    const [querry, setQuerry] = useState("")
+    const [query, setQuery] = useState("")
 
     const [openCreateTodoListDialog, setOpenCreateTodoListDialog] = useState(false);
 
     const sortedLists = useMemo(() => {
-        if (!querry.trim()) return lists;
+        if (!query.trim()) return lists;
 
         return [...lists].sort(
             (a, b) =>
-                similarityScore(b.name, querry) -
-                similarityScore(a.name, querry)
+                similarityScore(b.name, query) -
+                similarityScore(a.name, query)
         );
-    }, [lists, querry]);
+    }, [lists, query]);
 
     const prevQueryRef = useRef("");
 
     useEffect(() => {
         const prev = prevQueryRef.current;
-        const curr = querry;
+        const curr = query;
 
         const queryGotMoreSpecific = curr.length > prev.length;
 
@@ -92,7 +131,7 @@ export default function Overview() {
         if (sortedLists.length === 0) return;
 
         setOpenListId(sortedLists[0].id);
-    }, [querry, sortedLists]);
+    }, [query, sortedLists]);
 
     return (
         <>
@@ -102,9 +141,9 @@ export default function Overview() {
                     <TextField
                         variant="outlined"
                         placeholder="fuzzy find"
-                        value={querry}
+                        value={query}
                         onChange={(e) => {
-                            setQuerry(e.target.value)
+                            setQuery(e.target.value)
                         }}
                         sx={{ width: 300 }}
                     />
@@ -120,23 +159,48 @@ export default function Overview() {
                     </IconButton>
                 </Box>
 
-                {sortedLists.map(todoList => (
-                    <TodoListSection
-                        key={todoList.id}
-                        list={todoList}
-                        todos={getTodosByList(todos, todoList.id)}
-                        open={openListId === todoList.id}
-                        setOpen={() => {
-                            setOpenListId(prev =>
-                                prev === todoList.id ? null : todoList.id
-                            );
+
+
+                {lists.length === 0 ? (
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            height: "100%",
+                            alignItems: "center",
                         }}
-                        addTodo={handleAddTodo}
-                        toggleTodo={handleToggleTodo}
-                        dropTodo={handleDeleteTodo}
-                        dropTodoList={handleDeleteTodoList}
-                    />
-                ))}
+                    >
+                        <Button
+                            variant="contained"
+                            onClick={() => setOpenCreateTodoListDialog(true)}
+                            sx={{
+                                height: "fit-content",
+                            }}
+                        >
+                            <Typography variant="h4">
+                                Create first Todo List
+                            </Typography>
+                        </Button>
+                    </Box>
+                ) : (
+                    sortedLists.map(todoList => (
+                        <TodoListSection
+                            key={todoList.id}
+                            list={todoList}
+                            todos={getTodosByList(todos, todoList.id)}
+                            open={openListId === todoList.id}
+                            setOpen={() => {
+                                setOpenListId(prev =>
+                                    prev === todoList.id ? null : todoList.id
+                                );
+                            }}
+                            addTodo={handleAddTodo}
+                            toggleTodo={handleToggleTodo}
+                            dropTodo={handleDeleteTodo}
+                            dropTodoList={handleDeleteTodoList}
+                        />
+                    ))
+                )}
 
             </Box>
 
@@ -145,7 +209,8 @@ export default function Overview() {
                 close={(): void => {
                     setOpenCreateTodoListDialog(false)
                 }}
-                addTodoList={handleAddTodoList}
+                defaultValues={{}}
+                onSubmit={handleAddTodoList}
             />
         </>
     )

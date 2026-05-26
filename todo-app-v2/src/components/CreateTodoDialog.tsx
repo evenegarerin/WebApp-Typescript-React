@@ -10,7 +10,7 @@ import { ActionResult } from "next/dist/shared/lib/app-router-types";
 import { useEffect, useState } from "react";
 
 import { useForm } from "@tanstack/react-form"
-import { todoInputSchema, type TodoInput } from "@/schemas";
+import { todoInputSchema, type TodoInput } from "@/schemas/Todo";
 import { useRouter } from "next/navigation";
 
 type ConfirmDialogProps = {
@@ -53,9 +53,13 @@ export default function CreateTodoDialog({ open, close, defaultValues, onSubmit,
         },
 
         onSubmit: async ({ value }) => {
-            const result = await onSubmit(value)
+            onSubmit(value);
 
-            if (redirectTo) router.push(redirectTo)
+            form.reset();
+
+            if (redirectTo) router.push(redirectTo);
+
+            close();
         },
     })
 
@@ -177,7 +181,7 @@ export default function CreateTodoDialog({ open, close, defaultValues, onSubmit,
                                             e.target.value === "" ? null : e.target.value
                                         )
                                     }
-                                    InputLabelProps={{ shrink: true }}
+                                    slotProps={{ inputLabel: { shrink: true } }}
                                     fullWidth
                                 />
                             )}

@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardActions, CardContent, CardHeader, IconButton, Typography } from "@mui/material";
+import { Card, CardActions, CardContent, CardHeader, Chip, IconButton, Stack, Typography } from "@mui/material";
 import DoneIcon from '@mui/icons-material/Done';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { Todo } from "@/types/Todo";
@@ -37,13 +37,19 @@ const TodoCard = ({ todo, toggleTodo, dropTodo }: TodoCardProps) => {
                     {todo.description && <Typography>{todo.description}</Typography>}
                     {todo.dueDate && <Typography>{todo.dueDate}</Typography>}
 
-                    {todo.tags.length > 0 && (
-                        <Typography>{todo.tags.map((tag, index) => (
-                            <span key={index}>
-                                {tag}{index < todo.tags.length - 1 ? ", " : ""}
-                            </span>
-                        ))}</Typography>
-                    )}
+                    <Stack
+                        direction="row"
+                        spacing={1}
+                        mt={1}
+                        flexWrap="wrap"
+                    >
+                        {todo.tags.map((tag) => (
+                            <Chip
+                                key={tag}
+                                label={tag}
+                            />
+                        ))}
+                    </Stack>
                 </CardContent>
 
                 <CardActions>

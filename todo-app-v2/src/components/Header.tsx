@@ -3,6 +3,7 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material"
 import SchoolIcon from "@mui/icons-material/School"
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
     title: string
@@ -16,13 +17,22 @@ const pages = [
 ];
 
 const Header = (props: HeaderProps) => {
+    const router = useRouter();
+
     return (
         <AppBar position="static">
-            <Toolbar>
-                <SchoolIcon sx={{ mr: 2 }} />
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    Todo App
-                </Typography>
+            <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Box
+                    sx={{ display: "flex", alignItems: "center" }}
+                    onClick={() => {
+                        router.push("/");
+                    }}
+                >
+                    <SchoolIcon sx={{ mr: 2 }} />
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                        Todo App
+                    </Typography>
+                </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     {pages.map((page) => (
                         <Button

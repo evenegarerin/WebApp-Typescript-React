@@ -23,7 +23,7 @@ const todo2: Todo = {
     priority: "high",
     tags: ["Arbeit"],
     listId: 0,
-    description: "",
+    description: "generic description",
     dueDate: null
 };
 
@@ -35,7 +35,7 @@ const todo3: Todo = {
     tags: ["Gesundheit"],
     dueDate: "2026-04-02",
     listId: 2,
-    description: ""
+    description: "generic description"
 };
 
 const todo4: Todo = {
@@ -47,7 +47,7 @@ const todo4: Todo = {
     dueDate: "2026-04-30",
     tags: ["Finanzen"],
     listId: 1,
-    description: ""
+    description: "generic description"
 };
 
 const todo5: Todo = {
@@ -58,7 +58,7 @@ const todo5: Todo = {
     priority: "low",
     tags: ["Freizeit"],
     listId: 2,
-    description: "",
+    description: "generic description",
     dueDate: null
 };
 
@@ -70,7 +70,7 @@ const todo6: Todo = {
     status: "in-progress",
     tags: ["Arbeit, Private, Tags"],
     listId: 0,
-    description: "",
+    description: "generic description",
     dueDate: null
 };
 

@@ -1,7 +1,7 @@
 "use client"
 
 import { Dispatch, SetStateAction, useState } from "react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Card, CardActions, CardContent, Collapse, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardActions, CardContent, Collapse, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material"
 import TodoCard from "@/components/TodoCard"
 import { TodoList } from "@/types/TodoList";
 import { Todo } from "@/types/Todo";
@@ -10,7 +10,7 @@ import ConfirmDialog from "./ConfirmDialog";
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import AddIcon from '@mui/icons-material/Add';
 import CreateTodoDialog from "@/components/CreateTodoDialog";
-import { TodoInput } from "@/schemas";
+import { TodoInput } from "@/schemas/Todo";
 
 interface TodoListSectionProps {
     list: TodoList;
@@ -134,14 +134,36 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                                 gap: 2
                             }}
                         >
-                            {filterTodos(todos, filter).map(todo => (
-                                <TodoCard
-                                    key={todo.id}
-                                    todo={todo}
-                                    toggleTodo={toggleTodo}
-                                    dropTodo={dropTodo}
-                                />
-                            ))}
+                            {filterTodos(todos, filter).length === 0 ? (
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        height: "200px",
+                                        alignItems: "center",
+                                    }}
+                                >
+                                    <Button
+                                        variant="contained"
+                                        onClick={() => setOpenCreateTodoDialog(true)}
+                                        sx={{
+                                            height: "fit-content",
+                                        }}
+                                    >
+                                        <Typography variant="h6">
+                                            Create Todo
+                                        </Typography>
+                                    </Button>
+                                </Box>
+                            ) : (
+                                filterTodos(todos, filter).map(todo => (
+                                    <TodoCard
+                                        key={todo.id}
+                                        todo={todo}
+                                        toggleTodo={toggleTodo}
+                                        dropTodo={dropTodo}
+                                    />
+                                )))}
                         </Box>
 
                     </Box>

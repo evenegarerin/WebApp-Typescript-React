@@ -1,6 +1,7 @@
 "use client";
 
 import {
+    Alert,
     Box,
     Button,
     Card,
@@ -8,6 +9,7 @@ import {
     CardContent,
     CardHeader,
     Chip,
+    CircularProgress,
     IconButton,
     MenuItem,
     Stack,
@@ -21,7 +23,7 @@ import CancelIcon from "@mui/icons-material/Close"
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
 
@@ -38,6 +40,7 @@ import {
     toggleTodo,
     updateTodo,
 } from "@/actions";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Props {
     todoId: number;
@@ -53,53 +56,23 @@ type EditableField =
 
 export default function TodoCardEditable({ todoId }: Props) {
     const router = useRouter();
+    const queryClient = useQueryClient();
 
-    const [todo, setTodo] = useState<Todo | null>(null);
-    const [editingField, setEditingField] = useState<EditableField>(null);
-
-    const [tagInput, setTagInput] = useState("");
-
-    const [openDeletionConformation, setOpenDeletionConformation] = useState(false);
-
-    const form = useForm({
-        defaultValues: undefined as unknown as TodoInput,
-
-        validators: {
-            onChange: todoInputSchema
-        },
-
-        onSubmit: async ({ value }) => {
-            const res = await updateTodo(todoId, value);
-
-            if (!res.success) {
-                return;
-            }
-
-            await loadTodo();
-            setEditingField(null);
-        }
+    const { data: todo, isLoading, isError } = useQuery({
+        queryKey: ["todo", todoId],
+        queryFn: () => getTodo(todoId),
     });
 
-    const loadTodo = async () => {
-        const data = await getTodo(todoId);
-        if (!data) return;
+    const [editingField, setEditingField] = useState<EditableField>(null);
+    const [tagInput, setTagInput] = useState("");
+    const [openDeletionConformation, setOpenDeletionConformation] = useState(false);
 
-        form.reset({
-            name: data.name,
-            listId: data.listId,
-            description: data.description ?? "",
-            priority: data.priority,
-            dueDate: data.dueDate ?? "",
-            tags: data.tags ?? [],
-            status: data.status,
-        });
-
-        setTodo(data);
-    };
-
-    useEffect(() => {
-        loadTodo();
-    }, [todoId]);
+    const updateMutation = useMutation({
+        mutationFn: (value: TodoInput) => updateTodo(todoId, value),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+        },
+    });
 
     const cancel = () => {
         if (!todo) return;
@@ -107,29 +80,69 @@ export default function TodoCardEditable({ todoId }: Props) {
         form.reset({
             name: todo.name,
             listId: todo.listId,
-            description: todo.description ?? "",
-            priority: todo.priority,
-            dueDate: todo.dueDate ?? "",
+            description: todo.description,
+            priority: todo.priority as TodoPriority,
+            dueDate: todo.dueDate ?? null as string | null,
             tags: todo.tags ?? [],
-            status: todo.status,
+            status: todo.status as TodoStatus,
         });
 
         setEditingField(null);
     };
 
-    const toggle = async () => {
-        if (!todo) return;
-        await toggleTodo(todo.id);
-        await loadTodo();
-    };
+    const toggle = () => {
+        toggleMutation.mutate(todoId)
+    }
 
-    const remove = async () => {
-        if (!todo) return;
-        await deleteTodo(todo.id);
-        router.push("/");
-    };
+    const toggleMutation = useMutation({
+        mutationFn: toggleTodo,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+        },
+    });
 
-    if (!todo) return <Typography>Loading...</Typography>;
+    const remove = () => {
+        deleteMutation.mutate(todoId)
+    }
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteTodo,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+            router.push("/")
+        },
+    });
+
+    const form = useForm({
+        defaultValues: {
+            name: todo?.name ?? "",
+            listId: todo?.listId ?? 0,
+            description: todo?.description ?? "",
+            priority: todo?.priority ?? "low" as TodoPriority,
+            dueDate: todo?.dueDate ?? null as string | null,
+            tags: todo?.tags ?? [] as string[],
+            status: todo?.status ?? "open" as TodoStatus,
+        },
+        validators: {
+            onChange: todoInputSchema,
+        },
+        onSubmit: async ({ value }) => {
+            updateMutation.mutate(value);
+            setEditingField(null);
+        },
+    });
+
+    if (isLoading) {
+        return <CircularProgress />
+    }
+
+    if (isError || !todo) {
+        return (
+            <Alert severity="error">
+                Studierende:r konnte nicht geladen werden.
+            </Alert>
+        )
+    }
 
     return (
         <>
@@ -246,7 +259,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                             {(field =>
                                 editingField === "description" ? (
                                     <TextField
-                                        type="standard"
+                                        variant="standard"
                                         fullWidth
                                         value={field.state.value}
                                         onChange={(e) => field.handleChange(e.target.value)}
@@ -256,7 +269,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                 ) : (
                                     <Box display="flex" alignItems="center" gap={1}>
                                         <Typography>
-                                            {todo.description}
+                                            {field.state.value}
                                         </Typography>
                                         <IconButton onClick={() => setEditingField("description")}>
                                             <EditIcon fontSize="small" />
@@ -280,7 +293,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                 ) : (
                                     <Box display="flex" alignItems="center" gap={1}>
                                         <Typography>
-                                            {field.state.value || "no deadline"}
+                                            {field.state.value ?? "no deadline"}
                                         </Typography>
                                         <IconButton onClick={() => setEditingField("dueDate")}>
                                             <EditIcon fontSize="small" />
@@ -331,7 +344,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                         </Stack>
 
                                         <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
-                                            {field.state.value.map((tag) => (
+                                            {(field.state.value ?? []).map((tag) => (
                                                 <Chip
                                                     key={tag}
                                                     label={tag}

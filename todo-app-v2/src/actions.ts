@@ -4,26 +4,26 @@ import type { Todo } from "@/types/Todo"
 import type { TodoList } from "@/types/TodoList"
 import { todoStatuses, type TodoStatus } from "@/types/TodoStatus"
 
-import { store } from "@/lib/todoStore";
-
-import { ExampleTodos } from "@/debug_test_data/Todos"
-import { ExampleTodoLists } from "@/debug_test_data/TodoLists"
-
 import { type TodoInput, todoInputSchema } from "@/schemas/Todo";
 
 import { ActionResult } from "next/dist/shared/lib/app-router-types";
-import { revalidatePath } from "next/cache";
 import { TodoListInput, todoListInputSchema } from "@/schemas/TodoList";
-
-let todos: Todo[] = ExampleTodos
-let todoLists: TodoList[] = ExampleTodoLists
+import { db } from "@/db";
+import { todoLists, todos } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export const getTodos = async (): Promise<Todo[]> => {
-    return store.todos;
+    return db.select().from(todos)
 };
 
 export const getTodo = async (id: number): Promise<Todo | undefined> => {
-    return store.todos.find(t => t.id === id);
+    const result = await db
+        .select()
+        .from(todos)
+        .where(eq(todos.id, id))
+        .limit(1)
+
+    return result[0]
 };
 
 export const addTodo = async (input: TodoInput): Promise<ActionResult> => {
@@ -36,21 +36,7 @@ export const addTodo = async (input: TodoInput): Promise<ActionResult> => {
         };
     }
 
-    const data = result.data;
-
-    store.todos.push({
-        id: Date.now(),
-        listId: data.listId,
-        name: data.name,
-        description: data.description,
-        priority: data.priority,
-        dueDate: data.dueDate === "" ? null : data.dueDate,
-        tags: data.tags,
-        status: data.status
-    });
-
-    revalidatePath("/");
-    return { success: true, message: "Todo created successfully." };
+    return db.insert(todos).values(result.data)
 };
 
 export const updateTodo = async (id: number, input: TodoInput): Promise<ActionResult> => {
@@ -59,45 +45,30 @@ export const updateTodo = async (id: number, input: TodoInput): Promise<ActionRe
     if (!result.success) {
         return {
             success: false,
-            message: result.error.issues[0]?.message ?? "Invalid Input."
+            message: result.error.issues[0]?.message ?? "Invalid input."
         };
     }
 
-    const index = store.todos.findIndex(t => t.id === id);
-
-    if (index === -1) {
-        return { success: false, message: "Todo not found." };
-    }
-
-    const data = result.data;
-
-    store.todos[index] = {
-        ...store.todos[index],
-        ...data,
-        dueDate: data.dueDate === "" ? null : data.dueDate
-    };
-
-    revalidatePath("/");
-    return { success: true, message: "Todo updated successfully." };
+    return db
+        .update(todos)
+        .set(result.data)
+        .where(eq(todos.id, id))
 };
 
 export const deleteTodo = async (id: number): Promise<ActionResult> => {
-    const exists = store.todos.some(t => t.id === id);
-
-    if (!exists) {
-        return { success: false, message: "Todo not found." };
-    }
-
-    store.todos = store.todos.filter(t => t.id !== id);
-
-    revalidatePath("/");
-    return { success: true, message: "Todo deleted successfully." };
+    return db.delete(todos).where(eq(todos.id, id))
 };
 
 export const toggleTodo = async (id: number): Promise<ActionResult> => {
-    const exists = store.todos.some(t => t.id === id);
+    const result = await db
+        .select()
+        .from(todos)
+        .where(eq(todos.id, id))
+        .limit(1)
 
-    if (!exists) {
+    const todo = result[0]
+
+    if (!todo) {
         return { success: false, message: "Todo not found." };
     }
 
@@ -106,16 +77,16 @@ export const toggleTodo = async (id: number): Promise<ActionResult> => {
         return todoStatuses[(index + 1) % todoStatuses.length];
     };
 
-    store.todos = store.todos.map(t =>
-        t.id === id ? { ...t, status: nextStatus(t.status) } : t
-    );
+    todo.status = nextStatus(todo.status)
 
-    revalidatePath("/");
-    return { success: true, message: "Status updated." };
+    return db
+        .update(todos)
+        .set(todo)
+        .where(eq(todos.id, id))
 };
 
 export const getTodoLists = async (): Promise<TodoList[]> => {
-    return store.todoLists;
+    return db.select().from(todoLists)
 };
 
 export const addTodoList = async (newList: TodoListInput): Promise<ActionResult> => {
@@ -124,32 +95,13 @@ export const addTodoList = async (newList: TodoListInput): Promise<ActionResult>
     if (!result.success) {
         return {
             success: false,
-            message: result.error.issues[0]?.message ?? "Invalid Input."
+            message: result.error.issues[0]?.message ?? "Invalid input."
         };
     }
 
-    const data = result.data;
-
-    store.todoLists.push({
-        id: Date.now(),
-        name: data.name,
-        description: data.description ? data.description : undefined
-    });
-
-    revalidatePath("/");
-    return { success: true, message: "TodoList created successfully." };
+    return db.insert(todoLists).values(result.data)
 };
 
 export const deleteTodoList = async (id: number): Promise<ActionResult> => {
-    const exists = store.todoLists.some(tl => tl.id === id);
-
-    if (!exists) {
-        return { success: false, message: "Todo list not found." };
-    }
-
-    store.todoLists = store.todoLists.filter(tl => tl.id !== id);
-    store.todos = store.todos.filter(t => t.listId !== id);
-
-    revalidatePath("/");
-    return { success: true, message: "Todo list deleted." };
+    return db.delete(todoLists).where(eq(todoLists.id, id))
 };

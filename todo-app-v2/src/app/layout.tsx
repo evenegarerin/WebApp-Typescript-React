@@ -5,6 +5,7 @@ import ThemeRegistry from "@/components/ThemeRegistry";
 import Box from "@mui/material/Box";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import QueryProvider from "@/components/QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,17 +30,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <ThemeRegistry>
-          <Box sx={{ display: 'flex', flexDirection: "column", width: '100vw', height: '100vh' }}>
-            <Header title={"your cool todo list"} todoCount={0} />
+        <QueryProvider>
+          <ThemeRegistry>
+            <Box sx={{ display: 'flex', flexDirection: "column", width: '100vw', height: '100vh' }}>
+              <Header title={"your cool todo list"} todoCount={0} />
 
-            <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', width: '100%', overflowY: "scroll", flex: 1 }}>
-              {children}
+              <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', width: '100%', overflowY: "scroll", flex: 1 }}>
+                {children}
+              </Box>
+
+              <Footer author={"me"} />
             </Box>
-
-            <Footer author={"me"} />
-          </Box>
-        </ThemeRegistry>
+          </ThemeRegistry>
+        </QueryProvider>
       </body>
     </html>
   );

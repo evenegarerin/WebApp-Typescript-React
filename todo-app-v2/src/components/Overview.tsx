@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Box, Button, IconButton, TextField, Typography } from "@mui/material"
+import { Alert, Box, Button, CircularProgress, IconButton, TextField, Typography } from "@mui/material"
 import AddIcon from '@mui/icons-material/Add';
 import TodoListSection from "@/components/TodoListSection"
 import type { Todo } from "@/types/Todo"
@@ -10,95 +10,82 @@ import { TodoList } from "@/types/TodoList";
 import CreateTodoListDialog from "./CreateTodoListDialog";
 import { TodoInput } from "@/schemas/Todo";
 import { TodoListInput } from "@/schemas/TodoList";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 
 const getTodosByList = (todos: Todo[], listId: number): Todo[] => {
     return todos.filter(todo => todo.listId === listId)
 }
 
 export default function Overview() {
-    const [todos, setTodos] = useState<Todo[]>([]);
-    const [lists, setLists] = useState<TodoList[]>([]);
+    const queryClient = useQueryClient()
 
-    useEffect(() => {
-        const loadTodos = async () => {
-            const todos = await getTodos();
-            setTodos(todos);
-        }
-        const loadLists = async () => {
-            const lists = await getTodoLists();
-            setLists(lists);
+    const results = useQueries({
+        queries: [
+            { queryKey: ["todos"], queryFn: getTodos },
+            { queryKey: ["lists"], queryFn: getTodoLists },
+        ],
+    });
 
-            if (lists.length > 0) {
-                setOpenListId(lists[0].id);
-            }
-        };
+    const todos = results[0].data;
+    const lists = results[1].data;
 
-        loadTodos();
-        loadLists();
-    }, []);
+    const isLoading = results.some(r => r.isLoading);
+    const isError = results.some(r => r.isError);
 
     const handleAddTodo = async (newTodo: TodoInput) => {
-        const result = await addTodo(newTodo);
-
-        if (!result.success) {
-            console.error(result.message);
-            return;
-        }
-
-        const updatedTodos = await getTodos();
-        setTodos(updatedTodos);
+        addTodoMutation.mutate(newTodo)
     };
+
+    const addTodoMutation = useMutation({
+        mutationFn: addTodo,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todos"] })
+        },
+    })
 
     const handleAddTodoList = async (newTodoList: TodoListInput) => {
-        const result = await addTodoList(newTodoList);
-
-        if (!result.success) {
-            console.error(result.message);
-            return;
-        }
-
-        const updatedLists = await getTodoLists();
-        setLists(updatedLists);
+        addListMutation.mutate(newTodoList)
     }
+
+    const addListMutation = useMutation({
+        mutationFn: addTodoList,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["lists"] })
+        },
+    })
 
     const handleDeleteTodo = async (id: number) => {
-        const result = await deleteTodo(id);
-
-        if (!result.success) {
-            console.error(result.message);
-            return;
-        }
-
-        const updatedTodos = await getTodos();
-        setTodos(updatedTodos);
+        deleteTodoMutation.mutate(id)
     };
+
+    const deleteTodoMutation = useMutation({
+        mutationFn: deleteTodo,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todos"] })
+        },
+    })
 
     const handleToggleTodo = async (id: number) => {
-        const result = await toggleTodo(id);
-
-        if (!result.success) {
-            console.error(result.message);
-            return;
-        }
-
-        const updatedTodos = await getTodos();
-        setTodos(updatedTodos);
+        toggleMutation.mutate(id)
     };
 
+    const toggleMutation = useMutation({
+        mutationFn: toggleTodo,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["todos"] })
+        },
+    })
+
     const handleDeleteTodoList = async (id: number) => {
-        const result = await deleteTodoList(id);
-
-        if (!result.success) {
-            console.error(result.message);
-            return;
-        }
-
-        const updatedLists = await getTodoLists();
-        const updatedTodos = await getTodos();
-
-        setLists(updatedLists);
-        setTodos(updatedTodos);
+        deleteListMutation.mutate(id)
     }
+
+    const deleteListMutation = useMutation({
+        mutationFn: deleteTodoList,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["lists"] })
+        },
+    })
 
     const [openListId, setOpenListId] = useState<number | null>(null);
 
@@ -107,9 +94,13 @@ export default function Overview() {
     const [openCreateTodoListDialog, setOpenCreateTodoListDialog] = useState(false);
 
     const sortedLists = useMemo(() => {
-        if (!query.trim()) return lists;
+        if (!lists) return [];
 
-        return [...lists].sort(
+        const base = [...lists];
+
+        if (!query.trim()) return base;
+
+        return base.sort(
             (a, b) =>
                 similarityScore(b.name, query) -
                 similarityScore(a.name, query)
@@ -132,6 +123,24 @@ export default function Overview() {
 
         setOpenListId(sortedLists[0].id);
     }, [query, sortedLists]);
+
+    useEffect(() => {
+        if (!openListId && lists?.length) {
+            setOpenListId(lists[0].id);
+        }
+    }, [lists]);
+
+    if (isLoading) {
+        return <CircularProgress />
+    }
+
+    if (isError || !todos || !lists) {
+        return (
+            <Alert severity="error">
+                Studierende:r konnte nicht geladen werden.
+            </Alert>
+        )
+    }
 
     return (
         <>

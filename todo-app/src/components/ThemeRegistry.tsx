@@ -1,10 +1,28 @@
 "use client"
 
-import { ThemeProvider } from "@mui/material/styles"
-import * as React from "react"
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter"
-import CssBaseline from "@mui/material/CssBaseline"
-import theme from "../theme"
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter"
+import { ThemeProvider, createTheme, CssBaseline } from "@mui/material"
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: "#023047",
+        },
+        secondary: {
+            main: "#219ebc",
+        },
+    },
+
+    typography: {
+        fontFamily: "'Roboto', sans-serif",
+        h4: {
+            fontWeight: 600,
+        },
+    },
+    shape: {
+        borderRadius: 8,
+    },
+})
 
 export default function ThemeRegistry({
     children,

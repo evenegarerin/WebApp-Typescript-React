@@ -1,42 +1,118 @@
-"use server"
+"use server";
 
-import { ExampleTodoLists, ExampleTodos } from "./data"
-import { todoStatuses, type Todo, type TodoStatus } from "./models"
+import type { Todo } from "@/types/Todo"
+import type { TodoList } from "@/types/TodoList"
+import { todoStatuses, type TodoStatus } from "@/types/TodoStatus"
 
-let todos = ExampleTodos
+import { type TodoInput, todoInputSchema } from "@/schemas/Todo";
+
+import { ActionResult } from "next/dist/shared/lib/app-router-types";
+import { TodoListInput, todoListInputSchema } from "@/schemas/TodoList";
+import { db } from "@/db";
+import { todoLists, todos } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { success } from "zod";
 
 export const getTodos = async (): Promise<Todo[]> => {
-    return todos
-}
+    return db.select().from(todos)
+};
 
-export const addTodo = async (newTodo: Todo): Promise<Todo[]> => {
-    todos.push(newTodo)
+export const getTodo = async (id: number): Promise<Todo | undefined> => {
+    const result = await db
+        .select()
+        .from(todos)
+        .where(eq(todos.id, id))
+        .limit(1)
 
-    return todos
-}
+    return result[0]
+};
 
-export const deleteTodo = async (id: number): Promise<Todo[]> => {
-    todos = todos.filter(
-        t => t.id !== id
-    )
+export const addTodo = async (input: TodoInput): Promise<ActionResult> => {
+    const result = todoInputSchema.safeParse(input);
 
-    return todos
-}
+    if (!result.success) {
+        return {
+            success: false,
+            message: result.error.issues[0]?.message ?? "Invalid input."
+        };
+    }
 
-export const toggleTodo = async (id: number): Promise<Todo[]> => {
+    await db.insert(todos).values(result.data)
+
+    return { success: true };
+};
+
+export const updateTodo = async (id: number, input: TodoInput): Promise<ActionResult> => {
+    const result = todoInputSchema.safeParse(input);
+
+    if (!result.success) {
+        return {
+            success: false,
+            message: result.error.issues[0]?.message ?? "Invalid input."
+        };
+    }
+
+    await db
+        .update(todos)
+        .set(result.data)
+        .where(eq(todos.id, id))
+
+    return { success: true };
+};
+
+export const deleteTodo = async (id: number): Promise<ActionResult> => {
+    await db.delete(todos).where(eq(todos.id, id));
+
+    return { success: true };
+};
+
+export const toggleTodo = async (id: number): Promise<ActionResult> => {
+    const result = await db
+        .select()
+        .from(todos)
+        .where(eq(todos.id, id))
+        .limit(1)
+
+    const todo = result[0]
+
+    if (!todo) {
+        return { success: false, message: "Todo not found." };
+    }
+
     const nextStatus = (current: TodoStatus): TodoStatus => {
         const index = todoStatuses.indexOf(current);
         return todoStatuses[(index + 1) % todoStatuses.length];
+    };
+
+    todo.status = nextStatus(todo.status)
+
+    await db
+        .update(todos)
+        .set(todo)
+        .where(eq(todos.id, id))
+
+    return { success: true };
+};
+
+export const getTodoLists = async (): Promise<TodoList[]> => {
+    return db.select().from(todoLists)
+};
+
+export const addTodoList = async (newList: TodoListInput): Promise<ActionResult> => {
+    const result = todoListInputSchema.safeParse(newList);
+
+    if (!result.success) {
+        return {
+            success: false,
+            message: result.error.issues[0]?.message ?? "Invalid input."
+        };
     }
 
-    todos = todos.map(t =>
-        t.id === id
-            ? {
-                ...t,
-                status: nextStatus(t.status)
-            }
-            : t
-    )
+    return db.insert(todoLists).values(result.data);
+};
 
-    return todos
-}
+export const deleteTodoList = async (id: number): Promise<ActionResult> => {
+    await db.delete(todoLists).where(eq(todoLists.id, id));
+
+    return { success: true };
+};

@@ -1,0 +1,65 @@
+{
+    "Layout": {
+        "title": "Todo App",
+        "home": "Home",
+        "statistics": "Extra Statistics",
+        "about": "About Us",
+        "author": "Jan & Jan"
+    },
+    "Overview": {
+        "find": "Find",
+        "error": "Failed to load data."
+    },
+    "TodoList": {
+        "add": "Create Todo List",
+        "addFirst": "Create First Todo List",
+        "filter": "Filter",
+        "filterAll": "All",
+        "name": "Name",
+        "description": "Description",
+        "count": "{n, plural, =0 {No todos} one {# todo} other {# todos}}"
+    },
+    "Todo": {
+        "add": "Create Todo",
+        "addFirst": "Create First Todo",
+        "name": "Name",
+        "description": "Description",
+        "list": "Todo List",
+        "status": "Status",
+        "priority": "Priority",
+        "due-date": "Deadline",
+        "no-due-date": "No deadline",
+        "no-tags": "No tags",
+        "error": "Failed to load Todo.",
+        "tag": {
+            "placeholder": "Enter Tag",
+            "add": "Add"
+        }
+    },
+    "Priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+    },
+    "Status": {
+        "open": "Open",
+        "in-progress": "In Progress",
+        "done": "Done"
+    },
+    "About": {
+        "text": "We are a small developer team, based out of Flensburg."
+    },
+    "Statistics": {
+        "all": "All Together"
+    },
+    "Conformation": {
+        "save": "Save",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "deleteTodoTitle": "Delete Todo",
+        "deleteTodoText": "Are you sure you want to delete Todo \"{name}\"? This action cannot be undone.",
+        "deleteListTitle": "Delete Todo List",
+        "deleteListText": "Are you sure you want to delete Todo List \"{name}\"? This action cannot be undone."
+    }
+}

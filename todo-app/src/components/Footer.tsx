@@ -1,8 +1,10 @@
-interface FooterProps {
-    author: string
-}
+"use client"
 
-const Footer = (props: FooterProps) => {
+import { useTranslations } from "next-intl"
+
+const Footer = () => {
+    const t = useTranslations("Layout")
+
     return (
         <footer style={{
             backgroundColor: "darkblue",
@@ -12,7 +14,7 @@ const Footer = (props: FooterProps) => {
             justifyContent: "center",
             color: "aliceblue"
         }}>
-            {props.author}
+            {t("author")}
         </footer>
     )
 }

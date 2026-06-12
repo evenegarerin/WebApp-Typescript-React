@@ -4,7 +4,9 @@
         "home": "Home",
         "statistics": "Extra Statistics",
         "about": "About Us",
-        "author": "Jan & Jan"
+        "author": "Jan & Jan",
+        "darkMode": "Dark Mode",
+        "lightMode": "Light Mode"
     },
     "Overview": {
         "find": "Find",
@@ -17,7 +19,13 @@
         "filterAll": "All",
         "name": "Name",
         "description": "Description",
-        "count": "{n, plural, =0 {No todos} one {# todo} other {# todos}}"
+        "count": "{n, plural, =0 {No todos} one {# todo} other {# todos}}",
+        "searchTodos": "Search todos",
+        "sort": "Sort",
+        "sortDefault": "Default",
+        "sortPriority": "Priority",
+        "sortDueDate": "Deadline",
+        "empty": "No todos in this list."
     },
     "Todo": {
         "add": "Create Todo",
@@ -31,6 +39,7 @@
         "no-due-date": "No deadline",
         "no-tags": "No tags",
         "error": "Failed to load Todo.",
+        "nameTaken": "Name already exists",
         "tag": {
             "placeholder": "Enter Tag",
             "add": "Add"
@@ -50,7 +59,22 @@
         "text": "We are a small developer team, based out of Flensburg."
     },
     "Statistics": {
-        "all": "All Together"
+        "all": "All Together",
+        "highPriority": "High Priority",
+        "perList": "Per List",
+        "percentDone": "{p}% done"
+    },
+    "Auth": {
+        "login": "Log In",
+        "register": "Register",
+        "logout": "Log Out",
+        "name": "Name",
+        "email": "Email",
+        "password": "Password",
+        "loginFailed": "Login failed",
+        "registerFailed": "Registration failed",
+        "noAccount": "No account yet? Register",
+        "haveAccount": "Already have an account? Log in"
     },
     "Conformation": {
         "save": "Save",

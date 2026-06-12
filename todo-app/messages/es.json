@@ -1,0 +1,89 @@
+{
+    "Layout": {
+        "title": "Todo App",
+        "home": "Inicio",
+        "statistics": "Estadísticas Extra",
+        "about": "Sobre Nosotros",
+        "author": "Jan & Jan",
+        "darkMode": "Modo oscuro",
+        "lightMode": "Modo claro"
+    },
+    "Overview": {
+        "find": "Buscar",
+        "error": "No se pudieron cargar los datos."
+    },
+    "TodoList": {
+        "add": "Crear Lista de Tareas",
+        "addFirst": "Crear Primera Lista de Tareas",
+        "filter": "Filtro",
+        "filterAll": "Todas",
+        "name": "Nombre",
+        "description": "Descripción",
+        "count": "{n, plural, =0 {Sin tareas} one {# tarea} other {# tareas}}",
+        "searchTodos": "Buscar tareas",
+        "sort": "Orden",
+        "sortDefault": "Predeterminado",
+        "sortPriority": "Prioridad",
+        "sortDueDate": "Fecha límite",
+        "empty": "No hay tareas en esta lista."
+    },
+    "Todo": {
+        "add": "Crear Tarea",
+        "addFirst": "Crear Primera Tarea",
+        "name": "Nombre",
+        "description": "Descripción",
+        "list": "Lista de Tareas",
+        "status": "Estado",
+        "priority": "Prioridad",
+        "due-date": "Fecha límite",
+        "no-due-date": "Sin fecha límite",
+        "no-tags": "Sin etiquetas",
+        "error": "No se pudo cargar la tarea.",
+        "nameTaken": "El nombre ya existe",
+        "tag": {
+            "placeholder": "Añadir etiqueta",
+            "add": "Añadir"
+        }
+    },
+    "Priority": {
+        "low": "Baja",
+        "medium": "Media",
+        "high": "Alta"
+    },
+    "Status": {
+        "open": "Abierta",
+        "in-progress": "En progreso",
+        "done": "Completada"
+    },
+    "About": {
+        "text": "Somos un pequeño equipo de desarrolladores de Flensburg."
+    },
+    "Statistics": {
+        "all": "Total",
+        "highPriority": "Prioridad alta",
+        "perList": "Por lista",
+        "percentDone": "{p}% completado"
+    },
+    "Auth": {
+        "login": "Iniciar Sesión",
+        "register": "Registrarse",
+        "logout": "Cerrar Sesión",
+        "name": "Nombre",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "loginFailed": "Error al iniciar sesión",
+        "registerFailed": "Error en el registro",
+        "noAccount": "¿No tienes cuenta? Regístrate",
+        "haveAccount": "¿Ya tienes cuenta? Inicia sesión"
+    },
+    "Conformation": {
+        "save": "Guardar",
+        "delete": "Eliminar",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "deleteTodoTitle": "Eliminar Tarea",
+        "deleteTodoText": "¿Seguro que quieres eliminar la tarea \"{name}\"? Esta acción no se puede deshacer.",
+        "deleteListTitle": "Eliminar Lista de Tareas",
+        "deleteListText": "¿Seguro que quieres eliminar la lista de tareas \"{name}\"? Esta acción no se puede deshacer."
+    }
+}

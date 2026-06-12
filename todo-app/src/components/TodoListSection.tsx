@@ -1,8 +1,11 @@
 "use client"
 
 import { Dispatch, SetStateAction, useState } from "react";
-import { Accordion, AccordionDetails, AccordionSummary, Box, Button, Card, CardActions, CardContent, Chip, Collapse, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material"
+import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, Card, CardActions, CardContent, Chip, Collapse, FormControl, IconButton, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material"
 import { useTranslations } from "next-intl"
+import { TodoPriority } from "@/types/TodoPriority";
+import { matchesQuery } from "@/lib/search";
+import { truncate } from "@/lib/text";
 import TodoCard from "@/components/TodoCard"
 import { TodoList } from "@/types/TodoList";
 import { Todo } from "@/types/Todo";
@@ -23,9 +26,11 @@ interface TodoListSectionProps {
     toggleTodo: (id: number) => void;
     dropTodo: (id: number) => Promise<void>;
     dropTodoList: (id: number) => void;
+    searchQuery: string;
+    searchActive: boolean;
 }
 
-const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, dropTodo, dropTodoList }: TodoListSectionProps) => {
+const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, dropTodo, dropTodoList, searchQuery, searchActive }: TodoListSectionProps) => {
     const queryClient = useQueryClient();
 
     const t = useTranslations("TodoList");
@@ -34,8 +39,27 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
     const tConf = useTranslations("Conformation");
 
     const filterOptions = ["all", ...todoStatuses] as const;
+    const sortOptions = ["default", "priority", "dueDate"] as const;
 
     const [filter, setFilter] = useState(filterOptions[0]);
+    const [sort, setSort] = useState<(typeof sortOptions)[number]>("default");
+
+    // Derived State: gefilterte + sortierte Liste wird direkt berechnet, kein eigener State
+    const sortedTodos = sortTodos(filterTodos(todos, filter), sort);
+
+    // Treffer der globalen Suche stehen links/vorne in der Liste
+    const visibleTodos = searchQuery.trim()
+        ? [
+            ...sortedTodos.filter(t => matchesQuery(t, searchQuery)),
+            ...sortedTodos.filter(t => !matchesQuery(t, searchQuery)),
+        ]
+        : sortedTodos;
+
+    const hasSearchMatch =
+        searchQuery.trim().length > 0 &&
+        todos.some(t => matchesQuery(t, searchQuery));
+
+    const highlight = searchActive && hasSearchMatch;
 
     const [openDeletionConformation, setOpenDeletionConformation] = useState(false);
 
@@ -52,8 +76,10 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
     return (
         <>
             <Box sx={{
-                border: open ? "1px solid #ddd" : "none",
-                borderRadius: open ? 2 : 0,
+                border: highlight
+                    ? "2px solid darkred"
+                    : open ? "1px solid #ddd" : "none",
+                borderRadius: open || highlight ? 2 : 0,
                 mb: 2
             }}>
 
@@ -70,16 +96,24 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                             borderBottom: "1px solid #ddd",
                         }}
                     >
-                        <Typography variant="h4">
-                            {list.name}
-                        </Typography>
+                        <Box>
+                            <Typography variant="h4">
+                                {list.name}
+                            </Typography>
+
+                            {list.description && (
+                                <Typography color="text.secondary">
+                                    {truncate(list.description, 30)}
+                                </Typography>
+                            )}
+                        </Box>
 
                         <Chip label={t("count", { n: todos.length })} />
                     </Box>
 
                 </Collapse>
 
-                <Collapse in={open} timeout="auto" unmountOnExit>-
+                <Collapse in={open} timeout="auto" unmountOnExit>
                     <Box sx={{ p: 2 }}>
 
                         <Box sx={{
@@ -89,26 +123,30 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                             borderBottom: "1px solid #ddd",
                             paddingInlineStart: 3
                         }}>
-                            <Typography
-                                variant="h4"
-                                onClick={() => setOpen(prev => !prev)}
-                            >
-                                {list.name}
-                            </Typography>
+                            <Box>
+                                <Typography
+                                    variant="h4"
+                                    onClick={() => setOpen(prev => !prev)}
+                                >
+                                    {list.name}
+                                </Typography>
 
-                            <Chip
-                                label={t("count", { n: todos.length })}
-                                sx={{ marginInlineStart: 2 }}
-                            />
+                                {list.description && (
+                                    <Typography color="text.secondary">
+                                        {list.description}
+                                    </Typography>
+                                )}
+                            </Box>
 
-                            <FormControl fullWidth sx={{
+                            <FormControl sx={{
                                 mb: 2,
-                                marginInlineStart: 6,
+                                marginInlineStart: 2,
                                 marginBlockStart: 1,
-                                width: 260
+                                width: 170
                             }}>
                                 <InputLabel id="filter-input-label">{t("filter")}</InputLabel>
                                 <Select
+                                    size="small"
                                     labelId="filter-input-label"
                                     value={filter}
                                     label={t("filter")}
@@ -119,6 +157,26 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                                             {option === "all" ? t("filterAll") : tStatus(option)}
                                         </MenuItem>
                                     ))}
+                                </Select>
+                            </FormControl>
+
+                            <FormControl sx={{
+                                mb: 2,
+                                marginInlineStart: 2,
+                                marginBlockStart: 1,
+                                width: 170
+                            }}>
+                                <InputLabel id="sort-input-label">{t("sort")}</InputLabel>
+                                <Select
+                                    size="small"
+                                    labelId="sort-input-label"
+                                    value={sort}
+                                    label={t("sort")}
+                                    onChange={(e) => setSort(e.target.value)}
+                                >
+                                    <MenuItem value="default">{t("sortDefault")}</MenuItem>
+                                    <MenuItem value="priority">{t("sortPriority")}</MenuItem>
+                                    <MenuItem value="dueDate">{t("sortDueDate")}</MenuItem>
                                 </Select>
                             </FormControl>
 
@@ -150,15 +208,22 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                                 gap: 2
                             }}
                         >
-                            {filterTodos(todos, filter).length === 0 ? (
+                            {visibleTodos.length === 0 ? (
                                 <Box
                                     sx={{
                                         display: "flex",
+                                        flexDirection: "column",
                                         justifyContent: "center",
+                                        gap: 2,
                                         height: "200px",
                                         alignItems: "center",
+                                        width: "100%",
                                     }}
                                 >
+                                    <Alert severity="info">
+                                        {t("empty")}
+                                    </Alert>
+
                                     <Button
                                         variant="contained"
                                         onClick={() => setOpenCreateTodoDialog(true)}
@@ -172,12 +237,13 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                                     </Button>
                                 </Box>
                             ) : (
-                                filterTodos(todos, filter).map(todo => (
+                                visibleTodos.map(todo => (
                                     <TodoCard
                                         key={todo.id}
                                         todo={todo}
                                         toggleTodo={toggleTodo}
                                         dropTodo={dropTodo}
+                                        highlight={searchActive && matchesQuery(todo, searchQuery)}
                                     />
                                 )))}
                         </Box>
@@ -217,11 +283,29 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
 }
 
 const filterTodos = (todos: Todo[], filter: TodoStatus | "all"): Todo[] => {
-    if (filter === "all") {
-        return todos
+    return filter === "all" ? todos : todos.filter(t => t.status === filter);
+}
+
+const priorityRank: Record<TodoPriority, number> = {
+    high: 0,
+    medium: 1,
+    low: 2,
+}
+
+const sortTodos = (todos: Todo[], sort: "default" | "priority" | "dueDate"): Todo[] => {
+    if (sort === "priority") {
+        return todos.toSorted((a, b) => priorityRank[a.priority] - priorityRank[b.priority])
     }
 
-    return todos.filter(t => t.status === filter)
+    if (sort === "dueDate") {
+        return todos.toSorted((a, b) => {
+            if (!a.dueDate) return 1
+            if (!b.dueDate) return -1
+            return a.dueDate.localeCompare(b.dueDate)
+        })
+    }
+
+    return todos
 }
 
 export default TodoListSection

@@ -2,11 +2,12 @@
 
 import { TodoListInput, todoListInputSchema } from "@/schemas/TodoList";
 import { TodoList } from "@/types/TodoList";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, TextField, Box } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, Box } from "@mui/material";
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import FormTextField from "@/components/FormTextField";
 
 type ConfirmDialogProps = {
     open: boolean;
@@ -61,29 +62,16 @@ export default function CreateTodoListDialog({ open, close, defaultValues, onSub
                         <form.Field
                             name="name"
                             children={(field) => (
-                                <TextField
-                                    label={t("name")}
-                                    value={field.state.value}
-                                    onChange={(e) => field.handleChange(e.target.value)}
-                                    onBlur={field.handleBlur}
-                                    error={field.state.meta.errors.length > 0}
-                                    helperText={field.state.meta.errors[0]?.message}
-                                    fullWidth
-                                />
+                                <FormTextField field={field} label={t("name")} />
                             )}
                         />
 
                         <form.Field
                             name="description"
                             children={(field) => (
-                                <TextField
+                                <FormTextField
+                                    field={field}
                                     label={t("description")}
-                                    value={field.state.value || undefined}
-                                    onChange={(e) => field.handleChange(e.target.value)}
-                                    onBlur={field.handleBlur}
-                                    error={field.state.meta.errors.length > 0}
-                                    helperText={field.state.meta.errors[0]?.message}
-                                    fullWidth
                                     multiline
                                     minRows={2}
                                 />

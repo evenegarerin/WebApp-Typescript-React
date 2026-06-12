@@ -4,13 +4,13 @@ import TodoCardEditable from "@/components/TodoCardEditable";
 export default async function Page({
     params,
 }: {
-    params: Promise<{ todoId: string }>;
+    params: Promise<{ id: string }>;
 }) {
-    const todoId = Number((await params).todoId);
+    const todoId = Number((await params).id);
 
     return (
         <>
-            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', flex: '1' }}>
                 <TodoCardEditable
                     todoId={todoId}
                 />

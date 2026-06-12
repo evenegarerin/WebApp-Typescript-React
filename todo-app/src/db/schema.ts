@@ -3,6 +3,7 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod"
 
 import { todoStatuses } from "@/types/TodoStatus"
 import { todoPriorities } from "@/types/TodoPriority"
+import { user } from "./auth-schema"
 
 export const todos = sqliteTable("todos", {
     id: integer("id").primaryKey({ autoIncrement: true }),
@@ -34,6 +35,11 @@ export const todos = sqliteTable("todos", {
     status: text("status")
         .$type<(typeof todoStatuses)[number]>()
         .notNull(),
+
+    userId: text("user_id")
+        .references(() => user.id, {
+            onDelete: "cascade"
+        }),
 })
 
 export const todoLists = sqliteTable("todo_lists", {
@@ -42,7 +48,12 @@ export const todoLists = sqliteTable("todo_lists", {
     name: text("name")
         .notNull(),
 
-    description: text("description")
+    description: text("description"),
+
+    userId: text("user_id")
+        .references(() => user.id, {
+            onDelete: "cascade"
+        }),
 })
 
 export const todoInsertSchema =

@@ -28,6 +28,10 @@ export default function LanguageSwitcher() {
             <ToggleButton value="en">
                 EN
             </ToggleButton>
+
+            <ToggleButton value="es">
+                ES
+            </ToggleButton>
         </ToggleButtonGroup>
     )
 }

@@ -7,7 +7,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import QueryProvider from "@/components/QueryProvider";
 import { LocaleProvider } from "@/context/LocaleContext"
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +37,7 @@ export default function RootLayout({
               <Box sx={{ display: 'flex', flexDirection: "column", width: '100vw', height: '100vh' }}>
                 <Header />
 
-                <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', width: '100%', overflowY: "scroll", flex: 1 }}>
+                <Box sx={{ display: 'flex', flexDirection: "column", width: '100%', overflowY: "auto", flex: 1 }}>
                   {children}
                 </Box>
 

@@ -4,7 +4,9 @@
         "home": "Startseite",
         "statistics": "Extra Statistiken",
         "about": "Über Uns",
-        "author": "Jan & Jan"
+        "author": "Jan & Jan",
+        "darkMode": "Dunkler Modus",
+        "lightMode": "Heller Modus"
     },
     "Overview": {
         "find": "Suche",
@@ -17,7 +19,13 @@
         "filterAll": "Alle",
         "name": "Name",
         "description": "Beschreibung",
-        "count": "{n, plural, =0 {Keine Todos} one {# Todo} other {# Todos}}"
+        "count": "{n, plural, =0 {Keine Todos} one {# Todo} other {# Todos}}",
+        "searchTodos": "Todos durchsuchen",
+        "sort": "Sortierung",
+        "sortDefault": "Standard",
+        "sortPriority": "Priorität",
+        "sortDueDate": "Frist",
+        "empty": "Keine Todos in dieser Liste."
     },
     "Todo": {
         "add": "Todo Erstellen",
@@ -31,6 +39,7 @@
         "no-due-date": "Keine Frist",
         "no-tags": "Keine Tags",
         "error": "Todo konnte nicht geladen werden.",
+        "nameTaken": "Name existiert bereits",
         "tag": {
             "placeholder": "Tag Einfügen",
             "add": "Hinzufügen"
@@ -50,7 +59,22 @@
         "text": "Wir sind ein kleines Entwickler Team aus Flensburg."
     },
     "Statistics": {
-        "all": "Insgesamt"
+        "all": "Insgesamt",
+        "highPriority": "Hohe Priorität",
+        "perList": "Pro Liste",
+        "percentDone": "{p}% erledigt"
+    },
+    "Auth": {
+        "login": "Anmelden",
+        "register": "Registrieren",
+        "logout": "Abmelden",
+        "name": "Name",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "loginFailed": "Login fehlgeschlagen",
+        "registerFailed": "Registrierung fehlgeschlagen",
+        "noAccount": "Noch kein Konto? Registrieren",
+        "haveAccount": "Schon ein Konto? Anmelden"
     },
     "Conformation": {
         "save": "Speichern",

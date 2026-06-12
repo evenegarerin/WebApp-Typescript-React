@@ -3,6 +3,6 @@ import { createInsertSchema } from "drizzle-zod"
 import { todoLists } from "@/db/schema"
 
 export const todoListInputSchema = createInsertSchema(todoLists)
-    .omit({ id: true })
+    .omit({ id: true, userId: true })
 
 export type TodoListInput = z.infer<typeof todoListInputSchema>

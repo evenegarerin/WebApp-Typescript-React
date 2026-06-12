@@ -17,14 +17,14 @@ import {
     Typography,
 } from "@mui/material";
 
-import DoneIcon from "@mui/icons-material/Done";
+import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import CancelIcon from "@mui/icons-material/Close"
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useForm } from "@tanstack/react-form";
 
 import type { Todo } from "@/types/Todo";
@@ -34,6 +34,7 @@ import { todoPriorities, TodoPriority } from "@/types/TodoPriority";
 import { TodoInput, todoInputSchema } from "@/schemas/Todo";
 
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { priorityBorder, priorityChipColor, statusChipColor } from "@/components/TodoCard";
 import {
     deleteTodo,
     getTodo,
@@ -41,10 +42,7 @@ import {
     updateTodo,
 } from "@/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
-
-import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { useFormatter, useTranslations } from "next-intl";
 
 interface Props {
     todoId: number;
@@ -66,6 +64,7 @@ export default function TodoCardEditable({ todoId }: Props) {
     const tStatus = useTranslations("Status");
     const tPriority = useTranslations("Priority");
     const tConf = useTranslations("Conformation");
+    const format = useFormatter();
 
     const { data: todo, isLoading, isError } = useQuery({
         queryKey: ["todo", todoId],
@@ -108,6 +107,7 @@ export default function TodoCardEditable({ todoId }: Props) {
         mutationFn: toggleTodo,
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+            await queryClient.invalidateQueries({ queryKey: ["todos"] });
         },
     });
 
@@ -147,7 +147,7 @@ export default function TodoCardEditable({ todoId }: Props) {
         return <CircularProgress />
     }
 
-    if (isError || !todo) {
+    if (isError) {
         return (
             <Alert severity="error">
                 {t("error")}
@@ -155,13 +155,28 @@ export default function TodoCardEditable({ todoId }: Props) {
         )
     }
 
+    if (!todo) {
+        notFound()
+    }
+
+    const isDone = todo.status === "done";
+
     return (
         <>
             <Box component="form" onSubmit={e => {
                 e.preventDefault()
                 form.handleSubmit()
             }}>
-                <Card variant="outlined" sx={{ margin: 2, minWidth: "400px" }}>
+                <Card
+                    variant="outlined"
+                    sx={{
+                        margin: 2,
+                        minWidth: "400px",
+                        maxWidth: "600px",
+                        borderColor: isDone ? "divider" : priorityBorder[todo.priority],
+                        opacity: isDone ? 0.6 : 1,
+                    }}
+                >
                     <CardHeader
                         title={
                             <form.Field name="name">
@@ -177,7 +192,10 @@ export default function TodoCardEditable({ todoId }: Props) {
                                         />
                                     ) : (
                                         <Box display="flex" alignItems="center" gap={1}>
-                                            <Typography variant="h6">
+                                            <Typography
+                                                variant="h6"
+                                                sx={{ textDecoration: isDone ? "line-through" : "none" }}
+                                            >
                                                 {field.state.value}
                                             </Typography>
                                             <IconButton onClick={() => setEditingField("name")}>
@@ -212,15 +230,19 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                     ))}
                                                 </TextField>
                                             ) : (
-                                                <Typography>
-                                                    {tPriority(field.state.value)}
-                                                </Typography>
+                                                <Chip
+                                                    size="small"
+                                                    color={isDone ? "default" : priorityChipColor[field.state.value as TodoPriority]}
+                                                    label={tPriority(field.state.value)}
+                                                />
                                             )
                                         }
                                     </form.Field>
-                                    <Typography>
-                                        {" - "}
-                                    </Typography>
+                                    {editingField === "priority-status" && (
+                                        <Typography>
+                                            {" - "}
+                                        </Typography>
+                                    )}
                                     <form.Field name="status">
                                         {(field) =>
                                             editingField === "priority-status" ? (
@@ -242,9 +264,11 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                     ))}
                                                 </TextField>
                                             ) : (
-                                                <Typography>
-                                                    {tStatus(field.state.value)}
-                                                </Typography>
+                                                <Chip
+                                                    size="small"
+                                                    color={statusChipColor[field.state.value as TodoStatus]}
+                                                    label={tStatus(field.state.value)}
+                                                />
                                             )
                                         }
                                     </form.Field>
@@ -279,7 +303,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                     />
                                 ) : (
                                     <Box display="flex" alignItems="center" gap={1}>
-                                        <Typography>
+                                        <Typography sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
                                             {field.state.value}
                                         </Typography>
                                         <IconButton onClick={() => setEditingField("description")}>
@@ -304,7 +328,9 @@ export default function TodoCardEditable({ todoId }: Props) {
                                 ) : (
                                     <Box display="flex" alignItems="center" gap={1}>
                                         <Typography>
-                                            {field.state.value ?? t("no-due-date")}
+                                            {field.state.value
+                                                ? format.dateTime(new Date(field.state.value), { dateStyle: "long" })
+                                                : t("no-due-date")}
                                         </Typography>
                                         <IconButton onClick={() => setEditingField("dueDate")}>
                                             <EditIcon fontSize="small" />
@@ -338,6 +364,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                 label={t("tag.placeholder")}
                                                 value={tagInput}
                                                 onChange={(e) => setTagInput(e.target.value)}
+                                                slotProps={{ htmlInput: { maxLength: 20 } }}
                                                 onKeyDown={(e) => {
                                                     if (e.key === "Enter") {
                                                         e.preventDefault();
@@ -390,7 +417,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                         {editingField === null ? (
                             <>
                                 <IconButton onClick={toggle}>
-                                    <DoneIcon />
+                                    <PublishedWithChangesIcon />
                                 </IconButton>
 
                                 <IconButton onClick={() => setOpenDeletionConformation(true)}>
@@ -417,10 +444,6 @@ export default function TodoCardEditable({ todoId }: Props) {
                     </CardActions>
                 </Card>
             </Box >
-
-            <QueryClientProvider client={queryClient}>
-                <ReactQueryDevtools initialIsOpen={false} />
-            </QueryClientProvider>
 
             <ConfirmDialog
                 open={openDeletionConformation}

@@ -10,4 +10,5 @@ export interface Todo {
     dueDate: string | null // ISO-Datum (YYYY-MM-DD) oder null
     tags: string[]
     status: TodoStatus
+    userId: string | null
 }

@@ -1,12 +1,16 @@
 "use client"
 
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import { NextIntlClientProvider } from "next-intl"
 import de from "@/../messages/de.json"
 import en from "@/../messages/en.json"
+import es from "@/../messages/es.json"
 
-export type Locale = "de" | "en"
-const messages = { de, en }
+export type Locale = "de" | "en" | "es"
+const messages = { de, en, es }
+
+const isLocale = (value: string | null): value is Locale =>
+    value === "de" || value === "en" || value === "es"
 
 interface LocaleContextValue {
     locale: Locale
@@ -22,8 +26,23 @@ export function LocaleProvider({
     children: React.ReactNode
 }) {
     const [locale, setLocale] = useState<Locale>("de")
+
+    // Gespeicherte Sprache erst nach dem Mount lesen, damit Server-Render
+    // und erster Client-Render dieselbe Sprache annehmen (kein Hydration-Mismatch).
+    useEffect(() => {
+        const stored = localStorage.getItem("locale")
+        if (isLocale(stored)) {
+            setLocale(stored)
+        }
+    }, [])
+
+    const changeLocale = (next: Locale) => {
+        setLocale(next)
+        localStorage.setItem("locale", next)
+    }
+
     return (
-        <LocaleContext value={{ locale, setLocale }}>
+        <LocaleContext value={{ locale, setLocale: changeLocale }}>
             <NextIntlClientProvider
                 locale={locale}
                 messages={messages[locale]}

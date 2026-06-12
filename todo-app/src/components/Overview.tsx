@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, Box, Button, CircularProgress, IconButton, TextField, Typography } from "@mui/material"
 import AddIcon from '@mui/icons-material/Add';
 import TodoListSection from "@/components/TodoListSection"
 import type { Todo } from "@/types/Todo"
+import { nextTodoStatus } from "@/types/TodoStatus"
+import { matchesQuery } from "@/lib/search"
 import { getTodos, addTodo, deleteTodo, toggleTodo, getTodoLists, deleteTodoList, addTodoList } from "@/actions"
 import { TodoList } from "@/types/TodoList";
 import CreateTodoListDialog from "./CreateTodoListDialog";
@@ -72,9 +74,31 @@ export default function Overview() {
         toggleMutation.mutate(id)
     };
 
+    // Optimistic Update: Der neue Status erscheint sofort im Cache,
+    // bei einem Server-Fehler wird auf den alten Stand zurückgerollt.
     const toggleMutation = useMutation({
         mutationFn: toggleTodo,
-        onSuccess: () => {
+        onMutate: async (id: number) => {
+            await queryClient.cancelQueries({ queryKey: ["todos"] })
+
+            const previous = queryClient.getQueryData<Todo[]>(["todos"])
+
+            queryClient.setQueryData<Todo[]>(["todos"], (old) =>
+                old?.map(todo =>
+                    todo.id === id
+                        ? { ...todo, status: nextTodoStatus(todo.status) }
+                        : todo
+                )
+            )
+
+            return { previous }
+        },
+        onError: (_error, _id, context) => {
+            if (context?.previous) {
+                queryClient.setQueryData(["todos"], context.previous)
+            }
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ["todos"] })
         },
     })
@@ -93,39 +117,26 @@ export default function Overview() {
     const [openListId, setOpenListId] = useState<number | null>(null);
 
     const [query, setQuery] = useState("")
+    const [searchFocused, setSearchFocused] = useState(false)
 
     const [openCreateTodoListDialog, setOpenCreateTodoListDialog] = useState(false);
 
-    const sortedLists = useMemo(() => {
-        if (!lists) return [];
-
-        const base = [...lists];
-
-        if (!query.trim()) return base;
-
-        return base.sort(
-            (a, b) =>
-                similarityScore(b.name, query) -
-                similarityScore(a.name, query)
-        );
-    }, [lists, query]);
-
-    const prevQueryRef = useRef("");
-
+    // Die Suche vergleicht gegen alle Todos: die Liste mit dem besten
+    // Treffer wird automatisch geöffnet.
     useEffect(() => {
-        const prev = prevQueryRef.current;
-        const curr = query;
+        if (!query.trim() || !todos) return;
 
-        const queryGotMoreSpecific = curr.length > prev.length;
+        const matches = todos.filter(todo => matchesQuery(todo, query));
+        if (matches.length === 0) return;
 
-        prevQueryRef.current = curr;
+        const best = matches.reduce((a, b) =>
+            similarityScore(b.name, query) > similarityScore(a.name, query)
+                ? b
+                : a
+        );
 
-        if (!queryGotMoreSpecific) return;
-        if (!curr.trim()) return;
-        if (sortedLists.length === 0) return;
-
-        setOpenListId(sortedLists[0].id);
-    }, [query, sortedLists]);
+        setOpenListId(best.listId);
+    }, [query, todos]);
 
     useEffect(() => {
         if (!openListId && lists?.length) {
@@ -157,6 +168,8 @@ export default function Overview() {
                         onChange={(e) => {
                             setQuery(e.target.value)
                         }}
+                        onFocus={() => setSearchFocused(true)}
+                        onBlur={() => setSearchFocused(false)}
                         sx={{ width: 300 }}
                     />
 
@@ -195,7 +208,7 @@ export default function Overview() {
                         </Button>
                     </Box>
                 ) : (
-                    sortedLists.map(todoList => (
+                    lists.map(todoList => (
                         <TodoListSection
                             key={todoList.id}
                             list={todoList}
@@ -210,6 +223,8 @@ export default function Overview() {
                             toggleTodo={handleToggleTodo}
                             dropTodo={handleDeleteTodo}
                             dropTodoList={handleDeleteTodoList}
+                            searchQuery={query}
+                            searchActive={searchFocused}
                         />
                     ))
                 )}

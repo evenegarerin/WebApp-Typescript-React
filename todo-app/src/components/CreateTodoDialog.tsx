@@ -1,6 +1,7 @@
 "use client"
 
-import { getTodoLists } from "@/actions";
+import { getTodoLists, todoNameExists } from "@/actions";
+import FormTextField from "@/components/FormTextField";
 import { Todo } from "@/types/Todo";
 import { TodoList } from "@/types/TodoList";
 import { todoPriorities, TodoPriority } from "@/types/TodoPriority";
@@ -82,30 +83,30 @@ export default function CreateTodoDialog({ open, close, defaultValues, onSubmit,
 
                         <form.Field
                             name="name"
+                            asyncDebounceMs={400}
+                            validators={{
+                                // Asynchrone Validierung: prüft per Server Action,
+                                // ob der Name schon vergeben ist (debounced).
+                                onChangeAsync: async ({ value }) => {
+                                    if (typeof value === "string" && value.trim().length >= 3) {
+                                        if (await todoNameExists(value)) {
+                                            return { message: t("nameTaken") }
+                                        }
+                                    }
+                                    return undefined
+                                },
+                            }}
                             children={(field) => (
-                                <TextField
-                                    label={t("name")}
-                                    value={field.state.value}
-                                    onChange={(e) => field.handleChange(e.target.value)}
-                                    onBlur={field.handleBlur}
-                                    error={field.state.meta.errors.length > 0}
-                                    helperText={field.state.meta.errors[0]?.message}
-                                    fullWidth
-                                />
+                                <FormTextField field={field} label={t("name")} />
                             )}
                         />
 
                         <form.Field
                             name="description"
                             children={(field) => (
-                                <TextField
+                                <FormTextField
+                                    field={field}
                                     label={t("description")}
-                                    value={field.state.value}
-                                    onChange={(e) => field.handleChange(e.target.value)}
-                                    onBlur={field.handleBlur}
-                                    error={field.state.meta.errors.length > 0}
-                                    helperText={field.state.meta.errors[0]?.message}
-                                    fullWidth
                                     multiline
                                     minRows={2}
                                 />
@@ -226,6 +227,9 @@ export default function CreateTodoDialog({ open, close, defaultValues, onSubmit,
                                                 onChange={(e) =>
                                                     setTagInput(e.target.value)
                                                 }
+                                                slotProps={{ htmlInput: { maxLength: 20 } }}
+                                                error={field.state.meta.errors.length > 0}
+                                                helperText={field.state.meta.errors[0]?.message}
                                                 onKeyDown={(e) => {
                                                     if (e.key === "Enter") {
                                                         e.preventDefault()

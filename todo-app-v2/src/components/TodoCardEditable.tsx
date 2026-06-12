@@ -42,6 +42,9 @@ import {
 } from "@/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+
 interface Props {
     todoId: number;
 }
@@ -69,8 +72,9 @@ export default function TodoCardEditable({ todoId }: Props) {
 
     const updateMutation = useMutation({
         mutationFn: (value: TodoInput) => updateTodo(todoId, value),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+            await queryClient.invalidateQueries({ queryKey: ["todos"] });
         },
     });
 
@@ -96,8 +100,8 @@ export default function TodoCardEditable({ todoId }: Props) {
 
     const toggleMutation = useMutation({
         mutationFn: toggleTodo,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
         },
     });
 
@@ -107,9 +111,10 @@ export default function TodoCardEditable({ todoId }: Props) {
 
     const deleteMutation = useMutation({
         mutationFn: deleteTodo,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
-            router.push("/")
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+            await queryClient.invalidateQueries({ queryKey: ["todos"] });
+            router.push("/");
         },
     });
 
@@ -406,6 +411,10 @@ export default function TodoCardEditable({ todoId }: Props) {
                     </CardActions>
                 </Card>
             </Box >
+
+            <QueryClientProvider client={queryClient}>
+                <ReactQueryDevtools initialIsOpen={false} />
+            </QueryClientProvider>
 
             <ConfirmDialog
                 open={openDeletionConformation}

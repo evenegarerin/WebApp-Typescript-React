@@ -4,6 +4,7 @@ import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material"
 import SchoolIcon from "@mui/icons-material/School"
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import LanguageSwitcher from "@/components/LanguageSwitcher"
 
 interface HeaderProps {
     title: string
@@ -34,6 +35,9 @@ const Header = (props: HeaderProps) => {
                     </Typography>
                 </Box>
                 <Box sx={{ display: 'flex', gap: 2 }}>
+                    <LanguageSwitcher>
+
+                    </LanguageSwitcher>
                     {pages.map((page) => (
                         <Button
                             key={page.path}

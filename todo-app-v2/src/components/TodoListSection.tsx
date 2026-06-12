@@ -11,19 +11,22 @@ import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import AddIcon from '@mui/icons-material/Add';
 import CreateTodoDialog from "@/components/CreateTodoDialog";
 import { TodoInput } from "@/schemas/Todo";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TodoListSectionProps {
     list: TodoList;
     todos: Array<Todo>;
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
-    addTodo: (value: TodoInput) => void;
+    addTodo: (value: TodoInput) => Promise<void>;
     toggleTodo: (id: number) => void;
-    dropTodo: (id: number) => void;
+    dropTodo: (id: number) => Promise<void>;
     dropTodoList: (id: number) => void;
 }
 
 const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, dropTodo, dropTodoList }: TodoListSectionProps) => {
+    const queryClient = useQueryClient();
+
     const filterOptions = ["all", ...todoStatuses] as const;
 
     const [filter, setFilter] = useState(filterOptions[0]);
@@ -175,9 +178,10 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                 title="Delete TodoList"
                 description={`Are you sure you want to delete TodoList: "${list.name}"? This action cannot be undone.`}
                 onClose={() => setOpenDeletionConformation(false)}
-                onConfirm={() => {
-                    handleConfirmDelete();
+                onConfirm={async () => {
+                    await handleConfirmDelete();
                     setOpenDeletionConformation(false);
+                    await queryClient.invalidateQueries({ queryKey: ["lists"] });
                 }}
             />
 
@@ -189,9 +193,10 @@ const TodoListSection = ({ list, todos, open, setOpen, addTodo, toggleTodo, drop
                 defaultValues={
                     { listId: list.id }
                 }
-                onSubmit={
-                    addTodo
-                }
+                onSubmit={async (value: TodoInput) => {
+                    await addTodo(value);
+                    await queryClient.invalidateQueries({ queryKey: ["todos"] });
+                }}
                 submitLabel="Add"
                 redirectTo="/"
             />

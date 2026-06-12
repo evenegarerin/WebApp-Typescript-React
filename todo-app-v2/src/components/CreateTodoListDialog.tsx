@@ -4,19 +4,21 @@ import { TodoListInput, todoListInputSchema } from "@/schemas/TodoList";
 import { TodoList } from "@/types/TodoList";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Stack, TextField, Box } from "@mui/material";
 import { useForm } from "@tanstack/react-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 type ConfirmDialogProps = {
     open: boolean;
     close: () => void;
     defaultValues?: Partial<TodoList>;
-    onSubmit: (value: TodoListInput) => void;
+    onSubmit: (value: TodoListInput) => Promise<void>;
     submitLabel?: string;
     redirectTo?: string;
 };
 
 export default function CreateTodoListDialog({ open, close, defaultValues, onSubmit, submitLabel, redirectTo }: ConfirmDialogProps) {
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const form = useForm({
         defaultValues: {
@@ -32,6 +34,8 @@ export default function CreateTodoListDialog({ open, close, defaultValues, onSub
             const result = await onSubmit(value);
 
             form.reset();
+
+            await queryClient.invalidateQueries({ queryKey: ["lists"] });
 
             if (redirectTo) router.push(redirectTo);
 

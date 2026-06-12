@@ -1,0 +1,55 @@
+{
+    "Layout": {
+        "title": "Todo App",
+        "home": "Startseite",
+        "statistics": "Extra Statistiken",
+        "about": "Über Uns",
+        "author": "Jan & Jan"
+    },
+    "Overview": {
+        "find": "Suche"
+    },
+    "TodoList": {
+        "add": "Todo Liste Erstellen",
+        "addFirst": "Erste Todo Liste Erstellen",
+        "filter": "filter",
+        "filterAll": "Alle",
+        "name": "Name",
+        "description": "Beschreibung"
+    },
+    "Todo": {
+        "add": "Todo Erstellen",
+        "addFirst": "Erstes Todo Erstellen",
+        "name": "Name",
+        "description": "Beschreibung",
+        "list": "Todo Liste",
+        "status": "Status",
+        "priority": "Priorität",
+        "due-date": "Frist",
+        "tag": {
+            "placeholder": "Tag Einfügen",
+            "add": "Hinzufügen"
+        }
+    },
+    "Priority": {
+        "low": "Niedrig",
+        "medium": "Mittel",
+        "high": "Hoch"
+    },
+    "Status": {
+        "open": "Offen",
+        "in-progress": "In Arbeit",
+        "closed": "Geschlossen"
+    },
+    "About": {
+        "text": "Wir sind ein kleines Entwickler Team aus Flensburg."
+    },
+    "Statistics": {
+        "all": "Insgesamt"
+    },
+    "Conformation": {
+        "save": "Speichern",
+        "delete": "Löschen",
+        "cancel": "Abbrechen"
+    }
+}

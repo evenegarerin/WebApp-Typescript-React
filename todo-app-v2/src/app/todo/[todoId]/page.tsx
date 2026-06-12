@@ -9,10 +9,12 @@ export default async function Page({
     const todoId = Number((await params).todoId);
 
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <TodoCardEditable
-                todoId={todoId}
-            />
-        </Box>
+        <>
+            <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <TodoCardEditable
+                    todoId={todoId}
+                />
+            </Box>
+        </>
     );
 }

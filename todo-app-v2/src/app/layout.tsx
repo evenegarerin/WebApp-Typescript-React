@@ -6,6 +6,8 @@ import Box from "@mui/material/Box";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import QueryProvider from "@/components/QueryProvider";
+import { LocaleProvider } from "@/context/LocaleContext"
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,19 +32,21 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <QueryProvider>
-          <ThemeRegistry>
-            <Box sx={{ display: 'flex', flexDirection: "column", width: '100vw', height: '100vh' }}>
-              <Header title={"your cool todo list"} todoCount={0} />
+        <LocaleProvider>
+          <QueryProvider>
+            <ThemeRegistry>
+              <Box sx={{ display: 'flex', flexDirection: "column", width: '100vw', height: '100vh' }}>
+                <Header title={"your cool todo list"} todoCount={0} />
 
-              <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', width: '100%', overflowY: "scroll", flex: 1 }}>
-                {children}
+                <Box sx={{ display: 'flex', flexDirection: "column", justifyContent: 'center', width: '100%', overflowY: "scroll", flex: 1 }}>
+                  {children}
+                </Box>
+
+                <Footer author={"me"} />
               </Box>
-
-              <Footer author={"me"} />
-            </Box>
-          </ThemeRegistry>
-        </QueryProvider>
+            </ThemeRegistry>
+          </QueryProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

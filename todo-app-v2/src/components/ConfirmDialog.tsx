@@ -1,3 +1,5 @@
+"use client"
+
 import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Button, } from "@mui/material";
 
 type ConfirmDialogProps = {

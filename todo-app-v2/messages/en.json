@@ -1,0 +1,55 @@
+{
+    "Layout": {
+        "title": "Todo App",
+        "home": "Home",
+        "statistics": "Extra Statistics",
+        "about": "About Us",
+        "author": "Jan & Jan"
+    },
+    "Overview": {
+        "find": "Find"
+    },
+    "TodoList": {
+        "add": "Create Todo List",
+        "addFirst": "Create First Todo List",
+        "filter": "filter",
+        "filterAll": "All",
+        "name": "Name",
+        "description": "Description"
+    },
+    "Todo": {
+        "add": "Create Todo",
+        "addFirst": "Create First Todo",
+        "name": "Name",
+        "description": "Description",
+        "list": "Todo List",
+        "status": "Status",
+        "priority": "Priorität",
+        "due-date": "Deadline",
+        "tag": {
+            "placeholder": "Enter Tag",
+            "add": "Add"
+        }
+    },
+    "Priority": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+    },
+    "Status": {
+        "open": "Open",
+        "in-progress": "In Progress",
+        "closed": "Closed"
+    },
+    "About": {
+        "text": "We are a small developer team, based out of Flensburg."
+    },
+    "Statistics": {
+        "all": "All Together"
+    },
+    "Conformation": {
+        "save": "Save",
+        "delete": "Delete",
+        "cancel": "Cancel"
+    }
+}

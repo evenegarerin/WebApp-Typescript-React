@@ -8,6 +8,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { useState } from "react";
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TodoCardProps {
     todo: Todo
@@ -17,6 +18,7 @@ interface TodoCardProps {
 
 const TodoCard = ({ todo, toggleTodo, dropTodo }: TodoCardProps) => {
     const router = useRouter();
+    const queryClient = useQueryClient();
 
     const [openDeletionConformation, setOpenDeletionConformation] = useState(false);
 
@@ -72,9 +74,10 @@ const TodoCard = ({ todo, toggleTodo, dropTodo }: TodoCardProps) => {
                 title="Delete Todo"
                 description={`Are you sure you want to delete Todo: "${todo.name}"? This action cannot be undone.`}
                 onClose={() => setOpenDeletionConformation(false)}
-                onConfirm={() => {
-                    handleConfirmDelete();
+                onConfirm={async () => {
+                    await handleConfirmDelete();
                     setOpenDeletionConformation(false);
+                    await queryClient.invalidateQueries({ queryKey: ["todos"] });
                 }}
             />
         </>

@@ -11,6 +11,7 @@ import { TodoListInput, todoListInputSchema } from "@/schemas/TodoList";
 import { db } from "@/db";
 import { todoLists, todos } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { success } from "zod";
 
 export const getTodos = async (): Promise<Todo[]> => {
     return db.select().from(todos)
@@ -36,7 +37,9 @@ export const addTodo = async (input: TodoInput): Promise<ActionResult> => {
         };
     }
 
-    return db.insert(todos).values(result.data)
+    await db.insert(todos).values(result.data)
+
+    return { success: true };
 };
 
 export const updateTodo = async (id: number, input: TodoInput): Promise<ActionResult> => {
@@ -49,14 +52,18 @@ export const updateTodo = async (id: number, input: TodoInput): Promise<ActionRe
         };
     }
 
-    return db
+    await db
         .update(todos)
         .set(result.data)
         .where(eq(todos.id, id))
+
+    return { success: true };
 };
 
 export const deleteTodo = async (id: number): Promise<ActionResult> => {
-    return db.delete(todos).where(eq(todos.id, id))
+    await db.delete(todos).where(eq(todos.id, id));
+
+    return { success: true };
 };
 
 export const toggleTodo = async (id: number): Promise<ActionResult> => {
@@ -79,10 +86,12 @@ export const toggleTodo = async (id: number): Promise<ActionResult> => {
 
     todo.status = nextStatus(todo.status)
 
-    return db
+    await db
         .update(todos)
         .set(todo)
         .where(eq(todos.id, id))
+
+    return { success: true };
 };
 
 export const getTodoLists = async (): Promise<TodoList[]> => {
@@ -99,9 +108,11 @@ export const addTodoList = async (newList: TodoListInput): Promise<ActionResult>
         };
     }
 
-    return db.insert(todoLists).values(result.data)
+    return db.insert(todoLists).values(result.data);
 };
 
 export const deleteTodoList = async (id: number): Promise<ActionResult> => {
-    return db.delete(todoLists).where(eq(todoLists.id, id))
+    await db.delete(todoLists).where(eq(todoLists.id, id));
+
+    return { success: true };
 };

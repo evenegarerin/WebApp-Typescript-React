@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1781278430481,
+      "tag": "0000_same_mysterio",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1781292709607,
+      "tag": "0001_quick_tattoo",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1781383742942,
+      "tag": "0002_chilly_loki",
+      "breakpoints": true
+    }
+  ]
+}

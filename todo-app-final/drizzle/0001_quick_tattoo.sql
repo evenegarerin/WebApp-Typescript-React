@@ -1,0 +1,1 @@
+ALTER TABLE `todo_lists` ADD `user_id` text REFERENCES user(id);

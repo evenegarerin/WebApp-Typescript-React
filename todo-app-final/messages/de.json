@@ -1,0 +1,116 @@
+{
+    "Layout": {
+        "title": "Todo App",
+        "home": "Startseite",
+        "statistics": "Extra Statistiken",
+        "about": "Über Uns",
+        "author": "Jan & Jan",
+        "darkMode": "Dunkler Modus",
+        "lightMode": "Heller Modus"
+    },
+    "Overview": {
+        "find": "Suche",
+        "error": "Daten konnten nicht geladen werden."
+    },
+    "TodoList": {
+        "add": "Todo Liste Erstellen",
+        "edit": "Todo Liste Bearbeiten",
+        "addFirst": "Erste Todo Liste Erstellen",
+        "filter": "Filter",
+        "filterAll": "Alle",
+        "name": "Name",
+        "description": "Beschreibung",
+        "count": "{n, plural, =0 {Keine Todos} one {# Todo} other {# Todos}}",
+        "searchTodos": "Todos durchsuchen",
+        "sort": "Sortierung",
+        "sortDefault": "Standard",
+        "sortPriority": "Priorität",
+        "sortDueDate": "Frist",
+        "empty": "Keine Todos in dieser Liste."
+    },
+    "Todo": {
+        "add": "Todo Erstellen",
+        "addFirst": "Erstes Todo Erstellen",
+        "name": "Name",
+        "description": "Beschreibung",
+        "list": "Todo Liste",
+        "status": "Status",
+        "priority": "Priorität",
+        "due-date": "Frist",
+        "no-due-date": "Keine Frist",
+        "no-tags": "Keine Tags",
+        "no-description": "Keine Beschreibung",
+        "error": "Todo konnte nicht geladen werden.",
+        "nameTaken": "Name existiert bereits",
+        "tag": {
+            "placeholder": "Tag Einfügen",
+            "add": "Hinzufügen"
+        }
+    },
+    "Priority": {
+        "low": "Niedrig",
+        "medium": "Mittel",
+        "high": "Hoch"
+    },
+    "Status": {
+        "open": "Offen",
+        "in-progress": "In Arbeit",
+        "done": "Erledigt"
+    },
+    "About": {
+        "text": "Wir sind ein kleines Entwickler Team aus Flensburg."
+    },
+    "Statistics": {
+        "all": "Insgesamt",
+        "highPriority": "Hohe Priorität",
+        "perList": "Pro Liste",
+        "percentDone": "{p}% erledigt",
+        "title": "Statistiken",
+        "byStatus": "Nach Status",
+        "byPriority": "Nach Priorität",
+        "completed": "{done} von {total} erledigt"
+    },
+    "Auth": {
+        "login": "Anmelden",
+        "register": "Registrieren",
+        "logout": "Abmelden",
+        "name": "Name",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "loginFailed": "Login fehlgeschlagen",
+        "registerFailed": "Registrierung fehlgeschlagen",
+        "noAccount": "Noch kein Konto? Registrieren",
+        "haveAccount": "Schon ein Konto? Anmelden"
+    },
+    "Actions": {
+        "toggleStatus": "Status ändern",
+        "editTodo": "Todo bearbeiten",
+        "deleteTodo": "Todo löschen",
+        "addTodo": "Todo hinzufügen",
+        "addList": "Liste hinzufügen",
+        "editList": "Liste bearbeiten",
+        "deleteList": "Liste löschen",
+        "save": "Speichern",
+        "cancel": "Abbrechen",
+        "editName": "Name bearbeiten",
+        "editDescription": "Beschreibung bearbeiten",
+        "editPriorityStatus": "Priorität & Status bearbeiten",
+        "editDueDate": "Frist bearbeiten",
+        "editTags": "Tags bearbeiten"
+    },
+    "Conformation": {
+        "save": "Speichern",
+        "delete": "Löschen",
+        "cancel": "Abbrechen",
+        "confirm": "Bestätigen",
+        "deleteTodoTitle": "Todo löschen",
+        "deleteTodoText": "Soll das Todo \"{name}\" wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "deleteListTitle": "Todo Liste löschen",
+        "deleteListText": "Soll die Todo Liste \"{name}\" wirklich gelöscht werden? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "saveError": "Speichern fehlgeschlagen."
+    },
+    "Error": {
+        "title": "Etwas ist schiefgelaufen.",
+        "retry": "Erneut versuchen"
+    }
+}

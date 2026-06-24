@@ -70,17 +70,18 @@ const Header = () => {
                     </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    {pages.map((page) => (
-                        <Button
-                            key={page.path}
-                            color="inherit"
-                            sx={{ textTransform: "none" }}
-                            component={Link}
-                            href={page.path}
-                        >
-                            {t(page.labelKey)}
-                        </Button>
-                    ))}
+                    {session &&
+                        pages.map((page) => (
+                            <Button
+                                key={page.path}
+                                color="inherit"
+                                sx={{ textTransform: "none" }}
+                                component={Link}
+                                href={page.path}
+                            >
+                                {t(page.labelKey)}
+                            </Button>
+                        ))}
 
                     {isPending ? null : session ? (
                         <>

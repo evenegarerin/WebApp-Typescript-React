@@ -21,7 +21,7 @@ import {
     LogoutIcon,
 } from "@/components/common/icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "@/components/common/LanguageSwitcher";
 import { useColorMode } from "@/components/providers/ThemeRegistry";
@@ -36,6 +36,7 @@ const pages = [
 
 const Header = () => {
     const router = useRouter();
+    const pathname = usePathname();
     const t = useTranslations("Layout");
     const tAuth = useTranslations("Auth");
 
@@ -62,7 +63,16 @@ const Header = () => {
 
     return (
         <AppBar position="static">
-            <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Toolbar
+                sx={{
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    justifyContent: "space-between",
+                    alignItems: { xs: "stretch", sm: "center" },
+                    py: { xs: 1, sm: 0 },
+                    gap: { xs: 1, sm: 0 },
+                }}
+            >
                 <Box sx={{ display: "flex", alignItems: "center" }}>
                     <LogoIcon sx={{ mr: 2 }} />
                     <Typography variant="h6" sx={{ flexGrow: 1 }}>
@@ -71,17 +81,29 @@ const Header = () => {
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     {session &&
-                        pages.map((page) => (
-                            <Button
-                                key={page.path}
-                                color="inherit"
-                                sx={{ textTransform: "none" }}
-                                component={Link}
-                                href={page.path}
-                            >
-                                {t(page.labelKey)}
-                            </Button>
-                        ))}
+                        pages.map((page) => {
+                            const isActive =
+                                page.path === "/"
+                                    ? pathname === "/"
+                                    : pathname === page.path ||
+                                    pathname.startsWith(page.path + "/");
+
+                            return (
+                                <Button
+                                    key={page.path}
+                                    color="inherit"
+                                    sx={{
+                                        textTransform: "none",
+                                        textDecoration: isActive ? "underline" : "none",
+                                        textUnderlineOffset: "4px",
+                                    }}
+                                    component={Link}
+                                    href={page.path}
+                                >
+                                    {t(page.labelKey)}
+                                </Button>
+                            );
+                        })}
 
                     {isPending ? null : session ? (
                         <>
@@ -160,7 +182,7 @@ const Header = () => {
                     </Menu>
                 </Box>
             </Toolbar>
-        </AppBar>
+        </AppBar >
     );
 };
 

@@ -116,7 +116,7 @@ const TodoListSection = ({
                     onClick={!open ? toggle : undefined}
                     sx={{
                         display: "flex",
-                        alignItems: "center",
+                        flexDirection: { xs: "column", lg: "row" },
                         p: 2,
                         paddingInlineStart: 5,
                         borderBottom: "1px solid",
@@ -128,127 +128,151 @@ const TodoListSection = ({
                     <Box
                         onClick={open ? toggle : undefined}
                         sx={{
+                            display: "flex",
+                            flexDirection: { xs: "column", sm: "row" },
                             paddingInlineEnd: 3,
-                            flexShrink: 1,
                             flexGrow: 1,
                             minWidth: 0,
                             cursor: "pointer",
                         }}
                     >
-                        <Typography variant="h4">{list.name}</Typography>
+                        <Box sx={{ minWidth: "100%" }}>
+                            <Typography variant="h4" sx={{ textAlign: { xs: "center", lg: "left" } }}>{list.name}</Typography>
 
-                        <Typography color="text.secondary">
-                            {list.description
-                                ? (open ? list.description : truncate(list.description, 30))
-                                : "\u00A0"}
-                        </Typography>
+                            <Typography color="text.secondary" sx={{ textAlign: { xs: "center", lg: "left" } }}>
+                                {list.description
+                                    ? (open ? list.description : truncate(list.description, 30))
+                                    : "\u00A0"}
+                            </Typography>
+                        </Box>
+
+                        <Fade in={!open} unmountOnExit timeout={{ enter: 600, exit: 0 }}>
+                            <Box
+                                sx={{
+                                    transform: { xs: "", sm: "translate(-100%, 25%)" },
+                                    alignSelf: { xs: "center", sm: "normal" }
+                                }}
+                            >
+                                <Chip
+                                    color="success"
+                                    variant="outlined"
+                                    label={t("count", { n: todos.length })}
+                                />
+                            </Box>
+                        </Fade>
                     </Box>
 
-                    <Fade in={!open} unmountOnExit timeout={{ enter: 600, exit: 0 }}>
-                        <Box sx={{ marginInlineStart: "auto" }}>
-                            <Chip
-                                color="success"
-                                variant="outlined"
-                                label={t("count", { n: todos.length })}
-                            />
-                        </Box>
-                    </Fade>
+
 
                     <Fade in={open} unmountOnExit timeout={{ enter: 600, exit: 0 }}>
                         <Box
                             sx={{
                                 display: "flex",
+                                flexDirection: { xs: "column", md: "row" },
                                 alignItems: "center",
                                 flexGrow: 1,
                                 marginInlineStart: 2,
                                 flexShrink: 0,
                             }}
                         >
-                            <FormControl
+                            <Box
                                 sx={{
-                                    m: 1,
-                                    width: 170,
+                                    display: "flex",
+                                    flexDirection: { xs: "column", sm: "row" },
+                                    alignItems: "center",
+                                    flexGrow: 1,
+                                    marginInlineStart: 2,
+                                    flexShrink: 0,
                                 }}
                             >
-                                <InputLabel id={`filter-input-label-${list.id}`}>
-                                    {t("filter")}
-                                </InputLabel>
-                                <Select
-                                    size="small"
-                                    labelId={`filter-input-label-${list.id}`}
-                                    value={filter}
-                                    label={t("filter")}
-                                    onChange={(e) => setFilter(e.target.value)}
-                                >
-                                    {filterOptions.map((option) => (
-                                        <MenuItem
-                                            key={option}
-                                            value={option}
-                                            sx={{ color: filterOptionColor[option] }}
-                                        >
-                                            {option === "all" ? t("filterAll") : tStatus(option)}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-
-                            <FormControl
-                                sx={{
-                                    m: 1,
-                                    width: 170,
-                                }}
-                            >
-                                <InputLabel id={`sort-input-label-${list.id}`}>
-                                    {t("sort")}
-                                </InputLabel>
-                                <Select
-                                    size="small"
-                                    labelId={`sort-input-label-${list.id}`}
-                                    value={sort}
-                                    label={t("sort")}
-                                    onChange={(e) => setSort(e.target.value)}
-                                >
-                                    <MenuItem value="default">{t("sortDefault")}</MenuItem>
-                                    <MenuItem value="priority">{t("sortPriority")}</MenuItem>
-                                    <MenuItem value="dueDate">{t("sortDueDate")}</MenuItem>
-                                </Select>
-                            </FormControl>
-
-                            <Tooltip title={tActions("addTodo")}>
-                                <IconButton
-                                    color="success"
-                                    onClick={() => setOpenCreateTodoDialog(true)}
+                                <FormControl
                                     sx={{
-                                        marginInlineStart: "auto",
-                                        marginInlineEnd: 1,
+                                        m: 1,
+                                        width: 170,
                                     }}
                                 >
-                                    <AddIcon />
-                                </IconButton>
-                            </Tooltip>
+                                    <InputLabel id={`filter-input-label-${list.id}`}>
+                                        {t("filter")}
+                                    </InputLabel>
+                                    <Select
+                                        size="small"
+                                        labelId={`filter-input-label-${list.id}`}
+                                        value={filter}
+                                        label={t("filter")}
+                                        onChange={(e) => setFilter(e.target.value)}
+                                    >
+                                        {filterOptions.map((option) => (
+                                            <MenuItem
+                                                key={option}
+                                                value={option}
+                                                sx={{ color: filterOptionColor[option] }}
+                                            >
+                                                {option === "all" ? t("filterAll") : tStatus(option)}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
 
-                            <Tooltip title={tActions("editList")}>
-                                <IconButton
-                                    onClick={() => setOpenUpdateTodoListDialog(true)}
+                                <FormControl
                                     sx={{
-                                        marginInlineEnd: 1,
+                                        m: 1,
+                                        width: 170,
                                     }}
                                 >
-                                    <EditIcon color="action" />
-                                </IconButton>
-                            </Tooltip>
+                                    <InputLabel id={`sort-input-label-${list.id}`}>
+                                        {t("sort")}
+                                    </InputLabel>
+                                    <Select
+                                        size="small"
+                                        labelId={`sort-input-label-${list.id}`}
+                                        value={sort}
+                                        label={t("sort")}
+                                        onChange={(e) => setSort(e.target.value)}
+                                    >
+                                        <MenuItem value="default">{t("sortDefault")}</MenuItem>
+                                        <MenuItem value="priority">{t("sortPriority")}</MenuItem>
+                                        <MenuItem value="dueDate">{t("sortDueDate")}</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
 
-                            <Tooltip title={tActions("deleteList")}>
-                                <IconButton
-                                    color="error"
-                                    onClick={handleDeleteClick}
-                                    sx={{
-                                        marginInlineEnd: 4,
-                                    }}
-                                >
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Tooltip>
+                            <Box>
+                                <Tooltip title={tActions("addTodo")}>
+                                    <IconButton
+                                        color="success"
+                                        onClick={() => setOpenCreateTodoDialog(true)}
+                                        sx={{
+                                            marginInlineStart: "auto",
+                                            marginInlineEnd: 1,
+                                        }}
+                                    >
+                                        <AddIcon />
+                                    </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title={tActions("editList")}>
+                                    <IconButton
+                                        onClick={() => setOpenUpdateTodoListDialog(true)}
+                                        sx={{
+                                            marginInlineEnd: 1,
+                                        }}
+                                    >
+                                        <EditIcon color="action" />
+                                    </IconButton>
+                                </Tooltip>
+
+                                <Tooltip title={tActions("deleteList")}>
+                                    <IconButton
+                                        color="error"
+                                        onClick={handleDeleteClick}
+                                        sx={{
+                                            marginInlineEnd: 4,
+                                        }}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Tooltip>
+                            </Box>
                         </Box>
                     </Fade>
                 </Box>

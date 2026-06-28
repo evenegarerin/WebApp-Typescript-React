@@ -233,8 +233,8 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                         isDone
                                                             ? "default"
                                                             : priorityChipColor[
-                                                                  field.state.value as TodoPriority
-                                                              ]
+                                                            field.state.value as TodoPriority
+                                                            ]
                                                     }
                                                     label={tPriority(field.state.value)}
                                                 />
@@ -271,7 +271,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                     size="small"
                                                     color={
                                                         statusChipColor[
-                                                            field.state.value as TodoStatus
+                                                        field.state.value as TodoStatus
                                                         ]
                                                     }
                                                     label={tStatus(field.state.value)}
@@ -298,7 +298,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                             <TextField
                                                 type="date"
                                                 fullWidth
-                                                value={field.state.value}
+                                                value={field.state.value ?? ""}
                                                 onChange={(e) => field.handleChange(e.target.value)}
                                                 error={field.state.meta.errors.length > 0}
                                                 helperText={field.state.meta.errors[0]?.message}
@@ -308,9 +308,9 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                 <Typography>
                                                     {field.state.value
                                                         ? format.dateTime(
-                                                              new Date(field.state.value),
-                                                              { dateStyle: "long" },
-                                                          )
+                                                            new Date(field.state.value),
+                                                            { dateStyle: "long" },
+                                                        )
                                                         : t("no-due-date")}
                                                 </Typography>
                                                 <Tooltip title={tActions("editDueDate")}>

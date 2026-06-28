@@ -153,6 +153,17 @@ export default function Home() {
         }
     }, [lists]);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setQuery("");
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
+
     if (isLoading) {
         return <CircularProgress />;
     }
@@ -189,6 +200,19 @@ export default function Home() {
                         }}
                         onFocus={() => setSearchFocused(true)}
                         onBlur={() => setSearchFocused(false)}
+                        slotProps={{
+                            input: {
+                                endAdornment: query && !searchFocused ? (
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ whiteSpace: "nowrap", marginInlineStart: 1 }}
+                                    >
+                                        (ESC to clear)
+                                    </Typography>
+                                ) : null,
+                            },
+                        }}
                         sx={{ width: 300 }}
                     />
 
@@ -242,7 +266,7 @@ export default function Home() {
                             dropTodo={handleDeleteTodo}
                             dropTodoList={handleDeleteTodoList}
                             searchQuery={query}
-                            searchActive={searchFocused}
+                            searchActive={query.trim().length > 0}
                         />
                     ))
                 )}

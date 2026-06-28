@@ -87,8 +87,8 @@ const TodoCard = ({ todo, toggleTodo, dropTodo, highlight }: TodoCardProps) => {
                     borderColor: highlight
                         ? "darkred"
                         : isDone
-                          ? "divider"
-                          : priorityBorder[todo.priority],
+                            ? "divider"
+                            : priorityBorder[todo.priority],
                     opacity: isDone ? 0.6 : 1,
                 }}
             >
@@ -116,21 +116,26 @@ const TodoCard = ({ todo, toggleTodo, dropTodo, highlight }: TodoCardProps) => {
                                 />
                             </Stack>
 
-                            {todo.dueDate && (
-                                <Typography>
-                                    {format.dateTime(new Date(todo.dueDate), { dateStyle: "long" })}
-                                </Typography>
-                            )}
+                            <Typography>
+                                {todo.dueDate ? format.dateTime(new Date(todo.dueDate), { dateStyle: "long" }) : "\u00A0"}
+                            </Typography>
                         </Stack>
                     }
                 />
 
-                <CardContent>
-                    {todo.description && (
-                        <Typography sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-                            {truncate(todo.description, 120)}
-                        </Typography>
-                    )}
+                <CardContent sx={{
+                    display: "flex",
+                    flexGrow: 1,
+                    flexDirection: "column",
+                }}>
+                    <Typography sx={{
+                        flexGrow: 1,
+                        whiteSpace: "pre-wrap",
+                        overflowWrap: "anywhere"
+
+                    }}>
+                        {todo.description && truncate(todo.description, 120)}
+                    </Typography>
 
                     <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
                         {todo.tags.slice(0, 3).map((tag) => (

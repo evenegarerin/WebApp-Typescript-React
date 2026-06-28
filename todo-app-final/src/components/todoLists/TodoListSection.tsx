@@ -77,9 +77,9 @@ const TodoListSection = ({
 
     const visibleTodos = searchQuery.trim()
         ? [
-              ...sortedTodos.filter((t) => matchesQuery(t, searchQuery)),
-              ...sortedTodos.filter((t) => !matchesQuery(t, searchQuery)),
-          ]
+            ...sortedTodos.filter((t) => matchesQuery(t, searchQuery)),
+            ...sortedTodos.filter((t) => !matchesQuery(t, searchQuery)),
+        ]
         : sortedTodos;
 
     const hasSearchMatch =
@@ -106,8 +106,8 @@ const TodoListSection = ({
         <>
             <Box
                 sx={{
-                    border: highlight ? "2px solid darkred" : open ? "1px solid" : "none",
-                    borderColor: highlight ? "darkred" : "divider",
+                    border: highlight ? "2px solid" : "1px solid",
+                    borderColor: highlight ? "darkred" : open ? "divider" : "transparent",
                     borderRadius: open || highlight ? 2 : 0,
                     mb: 2,
                 }}
@@ -129,17 +129,19 @@ const TodoListSection = ({
                         onClick={open ? toggle : undefined}
                         sx={{
                             paddingInlineEnd: 3,
-                            flexShrink: 0,
+                            flexShrink: 1,
+                            flexGrow: 1,
+                            minWidth: 0,
                             cursor: "pointer",
                         }}
                     >
                         <Typography variant="h4">{list.name}</Typography>
 
-                        {list.description && (
-                            <Typography color="text.secondary">
-                                {open ? list.description : truncate(list.description, 30)}
-                            </Typography>
-                        )}
+                        <Typography color="text.secondary">
+                            {list.description
+                                ? (open ? list.description : truncate(list.description, 30))
+                                : "\u00A0"}
+                        </Typography>
                     </Box>
 
                     <Fade in={!open} unmountOnExit timeout={{ enter: 600, exit: 0 }}>
@@ -159,13 +161,12 @@ const TodoListSection = ({
                                 alignItems: "center",
                                 flexGrow: 1,
                                 marginInlineStart: 2,
+                                flexShrink: 0,
                             }}
                         >
                             <FormControl
                                 sx={{
-                                    mb: 2,
-                                    marginInlineStart: 2,
-                                    marginBlockStart: 1,
+                                    m: 1,
                                     width: 170,
                                 }}
                             >
@@ -193,9 +194,7 @@ const TodoListSection = ({
 
                             <FormControl
                                 sx={{
-                                    mb: 2,
-                                    marginInlineStart: 2,
-                                    marginBlockStart: 1,
+                                    m: 1,
                                     width: 170,
                                 }}
                             >

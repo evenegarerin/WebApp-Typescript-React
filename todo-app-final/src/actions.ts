@@ -14,7 +14,18 @@ import { and, eq, ne } from "drizzle-orm";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 
+import { getLinkPreview } from "link-preview-js";
+
 export type ActionResult = { success: boolean; message?: string };
+
+export type LinkPreviewData = {
+    url: string;
+    title?: string;
+    description?: string;
+    image?: string;
+    siteName?: string;
+    favicon?: string;
+};
 
 const NOT_AUTHENTICATED: ActionResult = {
     success: false,
@@ -209,4 +220,40 @@ export const deleteTodoList = async (id: number): Promise<ActionResult> => {
     await db.delete(todoLists).where(and(eq(todoLists.id, id), eq(todoLists.userId, userId)));
 
     return { success: true };
+};
+
+export const fetchLinkPreview = async (url: string): Promise<LinkPreviewData | null> => {
+    const userId = await requireUserId();
+    if (!userId) return null;
+
+    try {
+        const data = await getLinkPreview(url, {
+            timeout: 5000,
+            followRedirects: "manual",
+            headers: {
+                "user-agent":
+                    "Mozilla/5.0 (compatible; TodoAppBot/1.0; +link-preview) Chrome/120 Safari/537.36",
+            },
+            handleRedirects: (baseURL, forwardedURL) => {
+                const base = new URL(baseURL);
+                const forwarded = new URL(forwardedURL);
+                return (
+                    forwarded.hostname === base.hostname ||
+                    forwarded.hostname === "www." + base.hostname ||
+                    "www." + forwarded.hostname === base.hostname
+                );
+            },
+        });
+
+        return {
+            url: data.url,
+            title: "title" in data ? data.title : undefined,
+            description: "description" in data ? data.description : undefined,
+            image: "images" in data && data.images.length > 0 ? data.images[0] : undefined,
+            siteName: "siteName" in data ? data.siteName : undefined,
+            favicon: "favicons" in data && data.favicons.length > 0 ? data.favicons[0] : undefined,
+        };
+    } catch {
+        return null;
+    }
 };

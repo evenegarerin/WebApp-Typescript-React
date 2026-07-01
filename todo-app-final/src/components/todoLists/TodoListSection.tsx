@@ -45,6 +45,8 @@ interface TodoListSectionProps {
     dropTodoList: (id: number) => void;
     searchQuery: string;
     searchActive: boolean;
+    registerRef?: (node: HTMLElement | null) => void;
+    order?: number;
 }
 
 const TodoListSection = ({
@@ -58,6 +60,8 @@ const TodoListSection = ({
     dropTodoList,
     searchQuery,
     searchActive,
+    registerRef,
+    order,
 }: TodoListSectionProps) => {
     const queryClient = useQueryClient();
 
@@ -77,9 +81,9 @@ const TodoListSection = ({
 
     const visibleTodos = searchQuery.trim()
         ? [
-            ...sortedTodos.filter((t) => matchesQuery(t, searchQuery)),
-            ...sortedTodos.filter((t) => !matchesQuery(t, searchQuery)),
-        ]
+              ...sortedTodos.filter((t) => matchesQuery(t, searchQuery)),
+              ...sortedTodos.filter((t) => !matchesQuery(t, searchQuery)),
+          ]
         : sortedTodos;
 
     const hasSearchMatch =
@@ -105,7 +109,9 @@ const TodoListSection = ({
     return (
         <>
             <Box
+                ref={registerRef}
                 sx={{
+                    order,
                     border: highlight ? "2px solid" : "1px solid",
                     borderColor: highlight ? "darkred" : open ? "divider" : "transparent",
                     borderRadius: open || highlight ? 2 : 0,
@@ -137,11 +143,21 @@ const TodoListSection = ({
                         }}
                     >
                         <Box sx={{ minWidth: "100%" }}>
-                            <Typography variant="h4" sx={{ textAlign: { xs: "center", lg: "left" } }}>{list.name}</Typography>
+                            <Typography
+                                variant="h4"
+                                sx={{ textAlign: { xs: "center", lg: "left" } }}
+                            >
+                                {list.name}
+                            </Typography>
 
-                            <Typography color="text.secondary" sx={{ textAlign: { xs: "center", lg: "left" } }}>
+                            <Typography
+                                color="text.secondary"
+                                sx={{ textAlign: { xs: "center", lg: "left" } }}
+                            >
                                 {list.description
-                                    ? (open ? list.description : truncate(list.description, 30))
+                                    ? open
+                                        ? list.description
+                                        : truncate(list.description, 30)
                                     : "\u00A0"}
                             </Typography>
                         </Box>
@@ -150,7 +166,7 @@ const TodoListSection = ({
                             <Box
                                 sx={{
                                     transform: { xs: "", sm: "translate(-100%, 25%)" },
-                                    alignSelf: { xs: "center", sm: "normal" }
+                                    alignSelf: { xs: "center", sm: "normal" },
                                 }}
                             >
                                 <Chip
@@ -161,8 +177,6 @@ const TodoListSection = ({
                             </Box>
                         </Fade>
                     </Box>
-
-
 
                     <Fade in={open} unmountOnExit timeout={{ enter: 600, exit: 0 }}>
                         <Box
@@ -207,7 +221,9 @@ const TodoListSection = ({
                                                 value={option}
                                                 sx={{ color: filterOptionColor[option] }}
                                             >
-                                                {option === "all" ? t("filterAll") : tStatus(option)}
+                                                {option === "all"
+                                                    ? t("filterAll")
+                                                    : tStatus(option)}
                                             </MenuItem>
                                         ))}
                                     </Select>
@@ -277,7 +293,7 @@ const TodoListSection = ({
                     </Fade>
                 </Box>
 
-                <Collapse in={open} timeout="auto" unmountOnExit>
+                <Collapse in={open} timeout={0} unmountOnExit>
                     <Box sx={{ p: 2 }}>
                         <Box
                             sx={{

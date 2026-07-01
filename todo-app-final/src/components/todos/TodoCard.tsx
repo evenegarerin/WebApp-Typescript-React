@@ -16,11 +16,12 @@ import { Todo } from "@/types/Todo";
 import { TodoPriority } from "@/types/TodoPriority";
 import { TodoStatus } from "@/types/TodoStatus";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
+import LinkPreviewList from "@/components/todos/LinkPreviewList";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
-import { truncate } from "@/lib/text";
+import { extractUrls, truncate } from "@/lib/text";
 
 interface TodoCardProps {
     todo: Todo;
@@ -61,6 +62,8 @@ const TodoCard = ({ todo, toggleTodo, dropTodo, highlight }: TodoCardProps) => {
 
     const isDone = todo.status === "done";
 
+    const descriptionUrls = extractUrls(todo.description ?? "");
+
     const handleDeleteClick = () => {
         setOpenDeletionConformation(true);
     };
@@ -87,8 +90,8 @@ const TodoCard = ({ todo, toggleTodo, dropTodo, highlight }: TodoCardProps) => {
                     borderColor: highlight
                         ? "darkred"
                         : isDone
-                            ? "divider"
-                            : priorityBorder[todo.priority],
+                          ? "divider"
+                          : priorityBorder[todo.priority],
                     opacity: isDone ? 0.6 : 1,
                 }}
             >
@@ -117,25 +120,32 @@ const TodoCard = ({ todo, toggleTodo, dropTodo, highlight }: TodoCardProps) => {
                             </Stack>
 
                             <Typography>
-                                {todo.dueDate ? format.dateTime(new Date(todo.dueDate), { dateStyle: "long" }) : "\u00A0"}
+                                {todo.dueDate
+                                    ? format.dateTime(new Date(todo.dueDate), { dateStyle: "long" })
+                                    : "\u00A0"}
                             </Typography>
                         </Stack>
                     }
                 />
 
-                <CardContent sx={{
-                    display: "flex",
-                    flexGrow: 1,
-                    flexDirection: "column",
-                }}>
-                    <Typography sx={{
+                <CardContent
+                    sx={{
+                        display: "flex",
                         flexGrow: 1,
-                        whiteSpace: "pre-wrap",
-                        overflowWrap: "anywhere"
-
-                    }}>
+                        flexDirection: "column",
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            flexGrow: 1,
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "anywhere",
+                        }}
+                    >
                         {todo.description && truncate(todo.description, 120)}
                     </Typography>
+
+                    {descriptionUrls.length > 0 && <LinkPreviewList urls={descriptionUrls} />}
 
                     <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
                         {todo.tags.slice(0, 3).map((tag) => (

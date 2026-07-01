@@ -86,7 +86,7 @@ const Header = () => {
                                 page.path === "/"
                                     ? pathname === "/"
                                     : pathname === page.path ||
-                                    pathname.startsWith(page.path + "/");
+                                      pathname.startsWith(page.path + "/");
 
                             return (
                                 <Button
@@ -182,7 +182,7 @@ const Header = () => {
                     </Menu>
                 </Box>
             </Toolbar>
-        </AppBar >
+        </AppBar>
     );
 };
 

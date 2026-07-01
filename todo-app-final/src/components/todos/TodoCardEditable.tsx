@@ -31,8 +31,10 @@ import { TodoStatus, todoStatuses } from "@/types/TodoStatus";
 import { todoPriorities, TodoPriority } from "@/types/TodoPriority";
 import { TodoInput, todoInputSchema } from "@/schemas/Todo";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
+import LinkPreviewList from "@/components/todos/LinkPreviewList";
 import { priorityBorder, priorityChipColor, statusChipColor } from "@/components/todos/TodoCard";
 import { deleteTodo, getTodo, toggleTodo, updateTodo, todoNameExists } from "@/actions";
+import { extractUrls } from "@/lib/text";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
 
@@ -72,7 +74,7 @@ export default function TodoCardEditable({ todoId }: Props) {
             await queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
             await queryClient.invalidateQueries({ queryKey: ["todos"] });
 
-            form.reset()
+            form.reset();
         },
     });
 
@@ -148,6 +150,8 @@ export default function TodoCardEditable({ todoId }: Props) {
     }
 
     const isDone = todo.status === "done";
+
+    const descriptionUrls = extractUrls(todo.description ?? "");
 
     return (
         <>
@@ -248,8 +252,8 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                         isDone
                                                             ? "default"
                                                             : priorityChipColor[
-                                                            field.state.value as TodoPriority
-                                                            ]
+                                                                  field.state.value as TodoPriority
+                                                              ]
                                                     }
                                                     label={tPriority(field.state.value)}
                                                 />
@@ -286,7 +290,7 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                     size="small"
                                                     color={
                                                         statusChipColor[
-                                                        field.state.value as TodoStatus
+                                                            field.state.value as TodoStatus
                                                         ]
                                                     }
                                                     label={tStatus(field.state.value)}
@@ -323,9 +327,9 @@ export default function TodoCardEditable({ todoId }: Props) {
                                                 <Typography>
                                                     {field.state.value
                                                         ? format.dateTime(
-                                                            new Date(field.state.value),
-                                                            { dateStyle: "long" },
-                                                        )
+                                                              new Date(field.state.value),
+                                                              { dateStyle: "long" },
+                                                          )
                                                         : t("no-due-date")}
                                                 </Typography>
                                                 <Tooltip title={tActions("editDueDate")}>
@@ -376,6 +380,8 @@ export default function TodoCardEditable({ todoId }: Props) {
                                 )
                             }
                         </form.Field>
+
+                        {descriptionUrls.length > 0 && <LinkPreviewList urls={descriptionUrls} />}
 
                         <form.Field name="tags">
                             {(field) => {

@@ -6,19 +6,6 @@ import { todos } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { todoInputSchema } from "@/schemas/Todo";
 
-// Wofür dieser Endpunkt nützlich wäre: Er macht die Todos für Clients
-// außerhalb dieser App erreichbar — z.B. eine Mobile-App, ein CLI-Tool
-// oder einen anderen Service, der per HTTP integriert. Server Actions
-// sind dagegen an das Next.js-RPC-Protokoll gebunden und nur aus der
-// eigenen App aufrufbar. Für unsere eigene UI bleiben Server Actions
-// trotzdem der Hauptweg: typsicher Ende-zu-Ende, kein manuelles fetch,
-// kein JSON-Parsing und dieselbe Zod-Validierung ohne Extra-Schritt.
-//
-// Beobachtung zum POST-Test (curl/fetch): Über die API Route müssen wir
-// URL, Methode, Header und Body selbst zusammenbauen und die Antwort
-// selbst parsen — die Server Action ist dagegen ein normaler, typisierter
-// Funktionsaufruf ohne Extra-Schritt.
-
 const requireUserId = async (): Promise<string | null> => {
     const session = await auth.api.getSession({ headers: await headers() });
     return session?.user.id ?? null;

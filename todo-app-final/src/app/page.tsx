@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
     Alert,
     Box,
@@ -33,6 +33,21 @@ import { useTranslations } from "next-intl";
 
 const getTodosByList = (todos: Todo[], listId: number): Todo[] => {
     return todos.filter((todo) => todo.listId === listId);
+};
+
+const CLICK_SCROLL_OFFSET = 40;
+const SEARCH_SCROLL_OFFSET = 120;
+
+const getScrollParent = (node: HTMLElement): HTMLElement => {
+    let el: HTMLElement | null = node.parentElement;
+    while (el) {
+        const { overflowY } = getComputedStyle(el);
+        if ((overflowY === "auto" || overflowY === "scroll") && el.scrollHeight > el.clientHeight) {
+            return el;
+        }
+        el = el.parentElement;
+    }
+    return document.scrollingElement as HTMLElement;
 };
 
 export default function Home() {
@@ -129,13 +144,43 @@ export default function Home() {
 
     const [openListId, setOpenListId] = useState<number | null>(null);
 
+    const sectionRefs = useRef(new Map<number, HTMLElement | null>());
+
+    const anchorTopRef = useRef<number | null>(null);
+    const prevOpenRef = useRef<number | null>(null);
+
+    const scrollToOpenedList = useCallback((id: number, offset: number) => {
+        requestAnimationFrame(() => {
+            const target = sectionRefs.current.get(id);
+            if (!target) return;
+
+            const container = getScrollParent(target);
+            const nodeTop =
+                container.scrollTop +
+                target.getBoundingClientRect().top -
+                container.getBoundingClientRect().top;
+            const maxScroll = container.scrollHeight - container.clientHeight;
+
+            const nextTop = Math.max(0, Math.min(nodeTop - offset, maxScroll));
+
+            container.scrollTo({ top: nextTop, behavior: "smooth" });
+            anchorTopRef.current = nodeTop - nextTop;
+        });
+    }, []);
+
     const [query, setQuery] = useState("");
     const [searchFocused, setSearchFocused] = useState(false);
 
     const [openCreateTodoListDialog, setOpenCreateTodoListDialog] = useState(false);
 
+    const searchScrolledId = useRef<number | null>(null);
+
     useEffect(() => {
-        if (!query.trim() || !todos) return;
+        if (!query.trim()) {
+            searchScrolledId.current = null;
+            return;
+        }
+        if (!todos) return;
 
         const matches = todos.filter((todo) => matchesQuery(todo, query));
         if (matches.length === 0) return;
@@ -145,7 +190,12 @@ export default function Home() {
         );
 
         setOpenListId(best.listId);
-    }, [query, todos]);
+
+        if (searchScrolledId.current !== best.listId) {
+            searchScrolledId.current = best.listId;
+            scrollToOpenedList(best.listId, SEARCH_SCROLL_OFFSET);
+        }
+    }, [query, todos, scrollToOpenedList]);
 
     useEffect(() => {
         if (!openListId && lists?.length) {
@@ -163,6 +213,43 @@ export default function Home() {
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, []);
+
+    const searchActive = query.trim().length > 0;
+
+    const listHasMatch = (listId: number) =>
+        !!todos?.some((todo) => todo.listId === listId && matchesQuery(todo, query));
+
+    const orderedLists =
+        lists && searchActive
+            ? [
+                  ...lists.filter((l) => l.id === openListId),
+                  ...lists.filter((l) => l.id !== openListId && listHasMatch(l.id)),
+                  ...lists.filter((l) => l.id !== openListId && !listHasMatch(l.id)),
+              ]
+            : (lists ?? []);
+
+    const listOrderById = new Map(orderedLists.map((list, index) => [list.id, index]));
+    const orderSignature = orderedLists.map((list) => list.id).join(",");
+
+    useLayoutEffect(() => {
+        const id = openListId;
+        const openChanged = prevOpenRef.current !== id;
+        prevOpenRef.current = id;
+
+        if (id === null) {
+            anchorTopRef.current = null;
+            return;
+        }
+        if (openChanged) return;
+        if (anchorTopRef.current === null) return;
+
+        const node = sectionRefs.current.get(id);
+        if (!node) return;
+
+        const container = getScrollParent(node);
+        const top = node.getBoundingClientRect().top - container.getBoundingClientRect().top;
+        container.scrollTop += top - anchorTopRef.current;
+    }, [orderSignature, openListId]);
 
     if (isLoading) {
         return <CircularProgress />;
@@ -185,6 +272,7 @@ export default function Home() {
             >
                 <Box
                     sx={{
+                        order: -1,
                         display: "flex",
                         flexDirection: "row",
                         alignItems: "center",
@@ -202,15 +290,16 @@ export default function Home() {
                         onBlur={() => setSearchFocused(false)}
                         slotProps={{
                             input: {
-                                endAdornment: query && !searchFocused ? (
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ whiteSpace: "nowrap", marginInlineStart: 1 }}
-                                    >
-                                        {t("clearHint")}
-                                    </Typography>
-                                ) : null,
+                                endAdornment:
+                                    query && !searchFocused ? (
+                                        <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                            sx={{ whiteSpace: "nowrap", marginInlineStart: 1 }}
+                                        >
+                                            {t("clearHint")}
+                                        </Typography>
+                                    ) : null,
                             },
                         }}
                         sx={{ width: 300 }}
@@ -254,19 +343,23 @@ export default function Home() {
                         <TodoListSection
                             key={todoList.id}
                             list={todoList}
+                            order={listOrderById.get(todoList.id) ?? 0}
                             todos={getTodosByList(todos, todoList.id)}
                             open={openListId === todoList.id}
+                            registerRef={(node) => {
+                                sectionRefs.current.set(todoList.id, node);
+                            }}
                             setOpen={() => {
-                                setOpenListId((prev) =>
-                                    prev === todoList.id ? null : todoList.id,
-                                );
+                                const willOpen = openListId !== todoList.id;
+                                setOpenListId(willOpen ? todoList.id : null);
+                                if (willOpen) scrollToOpenedList(todoList.id, CLICK_SCROLL_OFFSET);
                             }}
                             addTodo={handleAddTodo}
                             toggleTodo={handleToggleTodo}
                             dropTodo={handleDeleteTodo}
                             dropTodoList={handleDeleteTodoList}
                             searchQuery={query}
-                            searchActive={query.trim().length > 0}
+                            searchActive={searchActive}
                         />
                     ))
                 )}

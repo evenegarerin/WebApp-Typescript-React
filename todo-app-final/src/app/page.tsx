@@ -208,7 +208,7 @@ export default function Home() {
                                         color="text.secondary"
                                         sx={{ whiteSpace: "nowrap", marginInlineStart: 1 }}
                                     >
-                                        (ESC to clear)
+                                        {t("clearHint")}
                                     </Typography>
                                 ) : null,
                             },

@@ -32,7 +32,7 @@ import { todoPriorities, TodoPriority } from "@/types/TodoPriority";
 import { TodoInput, todoInputSchema } from "@/schemas/Todo";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { priorityBorder, priorityChipColor, statusChipColor } from "@/components/todos/TodoCard";
-import { deleteTodo, getTodo, toggleTodo, updateTodo } from "@/actions";
+import { deleteTodo, getTodo, toggleTodo, updateTodo, todoNameExists } from "@/actions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useFormatter, useTranslations } from "next-intl";
 
@@ -71,6 +71,8 @@ export default function TodoCardEditable({ todoId }: Props) {
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
             await queryClient.invalidateQueries({ queryKey: ["todos"] });
+
+            form.reset()
         },
     });
 
@@ -168,7 +170,20 @@ export default function TodoCardEditable({ todoId }: Props) {
                 >
                     <CardHeader
                         title={
-                            <form.Field name="name">
+                            <form.Field
+                                name="name"
+                                asyncDebounceMs={400}
+                                validators={{
+                                    onChangeAsync: async ({ value }) => {
+                                        if (typeof value === "string" && value.trim().length >= 3) {
+                                            if (await todoNameExists(value, todoId)) {
+                                                return { message: t("nameTaken") };
+                                            }
+                                        }
+                                        return undefined;
+                                    },
+                                }}
+                            >
                                 {(field) =>
                                     editingField === "name" ? (
                                         <TextField

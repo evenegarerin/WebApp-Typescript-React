@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import FormTextField from "@/components/common/FormTextField";
+import { todoListNameExists } from "@/actions";
 import type { ActionResult } from "@/actions";
 
 type ConfirmDialogProps = {
@@ -98,7 +99,20 @@ export default function CreateTodoListDialog({
                     <Stack spacing={2} mt={1}>
                         {error && <Alert severity="error">{error}</Alert>}
 
-                        <form.Field name="name">
+                        <form.Field
+                            name="name"
+                            asyncDebounceMs={400}
+                            validators={{
+                                onChangeAsync: async ({ value }) => {
+                                    if (typeof value === "string" && value.trim().length >= 1) {
+                                        if (await todoListNameExists(value)) {
+                                            return { message: t("nameTaken") };
+                                        }
+                                    }
+                                    return undefined;
+                                },
+                            }}
+                        >
                             {(field) => <FormTextField field={field} label={t("name")} />}
                         </form.Field>
 

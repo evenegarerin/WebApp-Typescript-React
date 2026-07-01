@@ -4,6 +4,7 @@ export { default as ToggleStatusIcon } from "@mui/icons-material/PublishedWithCh
 export { default as EditIcon } from "@mui/icons-material/Edit";
 export { default as SaveIcon } from "@mui/icons-material/Save";
 export { default as CancelIcon } from "@mui/icons-material/Close";
+export { default as ArrowBackIcon } from "@mui/icons-material/ArrowBack";
 export { default as MenuIcon } from "@mui/icons-material/MoreVert";
 export { default as LogoutIcon } from "@mui/icons-material/Logout";
 export { default as DarkModeIcon } from "@mui/icons-material/DarkMode";

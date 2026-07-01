@@ -9,7 +9,7 @@ import { type TodoInput, todoInputSchema } from "@/schemas/Todo";
 import { TodoListInput, todoListInputSchema } from "@/schemas/TodoList";
 import { db } from "@/db";
 import { todoLists, todos } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
@@ -39,14 +39,17 @@ export const getTodos = async (): Promise<Todo[]> => {
     return db.select().from(todos).where(eq(todos.userId, userId)).orderBy(todos.dueDate);
 };
 
-export const todoNameExists = async (name: string): Promise<boolean> => {
+export const todoNameExists = async (name: string, excludeId?: number): Promise<boolean> => {
     const userId = await requireUserId();
     if (!userId) return false;
+
+    const conditions = [eq(todos.userId, userId), eq(todos.name, name.trim())];
+    if (excludeId !== undefined) conditions.push(ne(todos.id, excludeId));
 
     const result = await db
         .select({ id: todos.id })
         .from(todos)
-        .where(and(eq(todos.userId, userId), eq(todos.name, name.trim())))
+        .where(and(...conditions))
         .limit(1);
 
     return result.length > 0;
@@ -139,6 +142,22 @@ export const getTodoLists = async (): Promise<TodoList[]> => {
     if (!userId) return [];
 
     return db.select().from(todoLists).where(eq(todoLists.userId, userId));
+};
+
+export const todoListNameExists = async (name: string, excludeId?: number): Promise<boolean> => {
+    const userId = await requireUserId();
+    if (!userId) return false;
+
+    const conditions = [eq(todoLists.userId, userId), eq(todoLists.name, name.trim())];
+    if (excludeId !== undefined) conditions.push(ne(todoLists.id, excludeId));
+
+    const result = await db
+        .select({ id: todoLists.id })
+        .from(todoLists)
+        .where(and(...conditions))
+        .limit(1);
+
+    return result.length > 0;
 };
 
 export const addTodoList = async (newList: TodoListInput): Promise<ActionResult> => {
